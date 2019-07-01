@@ -12,7 +12,9 @@
             android:roundIcon="@mipmap/ic_launcher_round"
             android:supportsRtl="true"
             android:theme="@style/AppTheme">
-        <activity android:name=".view.RestroomListActivity"></activity>
+        <activity android:name=".view.RestroomMapActivity">
+        </activity>
+        <activity android:name=".view.RestroomListActivity"/>
         <activity android:name=".view.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
@@ -20,7 +22,9 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
+
+        <meta-data android:name="com.google.android.geo.API_KEY"
+                   android:value="@string/map_api_key"/>
     </application>
 
-    <!--<meta-data android:name="com.kakao.sdk.AppKey" android:value="f9fbfc17771decde37530d945da206a8"/>-->
 </manifest>
