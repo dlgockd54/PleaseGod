@@ -3,6 +3,7 @@ package com.example.pleasegod.view
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
+import android.view.View
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -28,7 +29,7 @@ class RestroomListActivity : AppCompatActivity() {
         setContentView(R.layout.activity_restroom_list)
 
         init()
-        mRestroomViewModel.getRestroomList(1, 100, "고양시")
+        getRestroomList()
     }
 
     private fun init() {
@@ -40,12 +41,18 @@ class RestroomListActivity : AppCompatActivity() {
                 mRestroomList.clear()
                 mRestroomList.addAll(it)
                 mRestroomListAdapter.notifyDataSetChanged()
+                loading_progress_bar.visibility = View.GONE
             })
         }
         rv_restroom_list.apply {
             layoutManager = LinearLayoutManager(this@RestroomListActivity)
             adapter = mRestroomListAdapter
         }
+    }
+
+    private fun getRestroomList(pageIndex: Int = 1, pageSize: Int = 1000, sigunName: String = "고양시") {
+        loading_progress_bar.visibility = View.VISIBLE
+        mRestroomViewModel.getRestroomList(pageIndex, pageSize, sigunName)
     }
 
     override fun onBackPressed() {
