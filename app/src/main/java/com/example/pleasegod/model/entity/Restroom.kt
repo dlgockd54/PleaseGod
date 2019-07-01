@@ -98,9 +98,9 @@ data class Restroom(
 
     @SerializedName("REFINE_WGS84_LOGT")
     @Expose
-    val refine_wgs84_logt: String,
+    val refine_wgs84_logt: String?,
 
     @SerializedName("REFINE_WGS84_LAT")
     @Expose
-    val refine_wgs84_lat: String
+    val refine_wgs84_lat: String?
 )

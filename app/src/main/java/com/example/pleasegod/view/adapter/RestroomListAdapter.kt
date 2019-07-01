@@ -22,6 +22,7 @@ class RestroomListAdapter(private val mActivity: Activity, private val mRestroom
     RecyclerView.Adapter<RestroomListAdapter.RestroomViewHolder>() {
     companion object {
         val TAG: String = RestroomListAdapter::class.java.simpleName
+        val INTENT_KEY: String = "selected_restroom"
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RestroomViewHolder {
@@ -40,7 +41,11 @@ class RestroomListAdapter(private val mActivity: Activity, private val mRestroom
             holder.itemView.setOnClickListener {
                 Log.d(TAG, "onClick()")
 
-                mActivity.startActivity(Intent(mActivity, RestroomMapActivity::class.java))
+                val intent: Intent = Intent(mActivity, RestroomMapActivity::class.java).apply {
+                    putExtra(INTENT_KEY, restroom.refine_roadnm_addr)
+                }
+
+                mActivity.startActivity(intent)
                 mActivity.overridePendingTransition(R.anim.animation_slide_from_right, R.anim.animation_slide_to_left)
             }
         }

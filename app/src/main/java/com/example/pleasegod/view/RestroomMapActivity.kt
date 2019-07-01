@@ -10,6 +10,7 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import com.example.pleasegod.R
 import com.example.pleasegod.model.entity.Restroom
+import com.example.pleasegod.view.adapter.RestroomListAdapter
 import com.example.pleasegod.viewmodel.RestroomViewModel
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.api.GoogleApiClient
@@ -19,6 +20,8 @@ import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
+import com.google.android.gms.maps.model.BitmapDescriptor
+import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.gms.tasks.Task
@@ -36,6 +39,7 @@ class RestroomMapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiCl
     private lateinit var mCurrentLatLng: LatLng
     private lateinit var mRestroomViewModel: RestroomViewModel
     private val mRestroomList: MutableList<Restroom> = mutableListOf()
+    private var mSelectedRestroomRoadNameAddress: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -50,10 +54,17 @@ class RestroomMapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiCl
     }
 
     private fun init() {
+        intent.getStringExtra(RestroomListAdapter.INTENT_KEY)?.let {
+            mSelectedRestroomRoadNameAddress = it
+        }
+        Log.d(TAG, mSelectedRestroomRoadNameAddress)
         mRestroomViewModel = ViewModelProviders.of(this).get(RestroomViewModel::class.java).apply {
             mRestroomLiveData.observe(this@RestroomMapActivity, Observer {
                 mRestroomList.clear()
                 mRestroomList.addAll(it)
+
+                addMarkerForRestroomList()
+                showUserSelectedRestroom()
             })
         }
         mGoogleApiClient = GoogleApiClient.Builder(this@RestroomMapActivity)
@@ -64,7 +75,28 @@ class RestroomMapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiCl
         mFusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this)
     }
 
-    private fun showCurrentLocation() {
+    private fun addMarkerForRestroomList() {
+        for (restroom in mRestroomList) {
+            if (restroom.pbctlt_plc_nm != null) {
+                if (restroom.refine_wgs84_lat != null) {
+                    if (restroom.refine_wgs84_logt != null) {
+                        val latitude: Double = restroom.refine_wgs84_lat.toDouble()
+                        val longitude: Double = restroom.refine_wgs84_logt.toDouble()
+                        val latLng: LatLng = LatLng(latitude, longitude)
+                        val snippet: String = restroom.refine_roadnm_addr
+
+                        addMarker(
+                            restroom.pbctlt_plc_nm,
+                            latLng,
+                            snippet
+                        )
+                    }
+                }
+            }
+        }
+    }
+
+    private fun setCurrentLocation() {
         if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             val locationResult: Task<Location> = (mFusedLocationProviderClient.lastLocation).apply {
                 addOnCompleteListener { task ->
@@ -72,16 +104,10 @@ class RestroomMapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiCl
                         task.result?.let {
                             mCurrentLatLng = LatLng(it.latitude, it.longitude)
 
-                            mMap.addMarker(
-                                MarkerOptions()
-                                    .title(getString(R.string.current_location))
-                                    .position(mCurrentLatLng)
-                            )
-                            mMap.moveCamera(
-                                CameraUpdateFactory.newLatLngZoom(
-                                    mCurrentLatLng,
-                                    DEFAULT_ZOOM
-                                )
+                            addMarker(
+                                getString(R.string.current_location),
+                                mCurrentLatLng,
+                                BitmapDescriptorFactory.defaultMarker()
                             )
                         }
                     } else {
@@ -91,6 +117,24 @@ class RestroomMapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiCl
                 }
             }
         }
+    }
+
+    private fun addMarker(locationName: String, latlng: LatLng, bitmapDescriptor: BitmapDescriptor) {
+        addMarker(locationName, latlng, null, bitmapDescriptor)
+    }
+
+    private fun addMarker(
+        locationName: String,
+        latlng: LatLng,
+        snippetStr: String? = null,
+        bitmapDescriptor: BitmapDescriptor = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE)
+    ) {
+        mMap.addMarker(
+            MarkerOptions().title(locationName)
+                .position(latlng)
+                .icon(bitmapDescriptor)
+                .snippet(snippetStr)
+        )
     }
 
     private fun getRestroomList(pageIndex: Int = 1, pageSize: Int = 1000, sigunName: String = "고양시") {
@@ -124,7 +168,31 @@ class RestroomMapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiCl
             }
         }
 
-        showCurrentLocation()
+        setCurrentLocation()
+    }
+
+    private fun showUserSelectedRestroom() {
+        Log.d(TAG, "${mRestroomList.size}")
+        Log.d(TAG, mSelectedRestroomRoadNameAddress)
+
+        for (restroom in mRestroomList) {
+            if (restroom.refine_roadnm_addr == mSelectedRestroomRoadNameAddress) {
+                if (restroom.refine_wgs84_lat == null || restroom.refine_wgs84_logt == null) {
+                    Log.d(TAG, "selected restroom location is null")
+                } else {
+                    mMap.moveCamera(
+                        CameraUpdateFactory.newLatLngZoom(
+                            LatLng(restroom.refine_wgs84_lat.toDouble(), restroom.refine_wgs84_logt.toDouble()),
+                            DEFAULT_ZOOM
+                        )
+                    )
+                }
+
+                break
+            }
+        }
+
+        Log.d(TAG, "못 찾음")
     }
 
     override fun onBackPressed() {
