@@ -3,7 +3,7 @@ package com.example.pleasegod.model.repository
 import com.example.pleasegod.model.ApiManager
 import com.example.pleasegod.model.entity.ApiResponse
 import com.example.pleasegod.model.source.RestroomApi
-import io.reactivex.Maybe
+import io.reactivex.Single
 
 /**
  * Created by hclee on 2019-07-01.
@@ -22,5 +22,5 @@ class RestroomRepository {
         pageIndex: Int,
         pageSize: Int,
         sigunName: String
-    ): Maybe<ApiResponse> = mApi.getRestroomList(key, type, pageIndex, pageSize, sigunName)
+    ): Single<ApiResponse> = mApi.getRestroomList(key, type, pageIndex, pageSize, sigunName)
 }

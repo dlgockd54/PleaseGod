@@ -7,6 +7,8 @@ import androidx.lifecycle.MutableLiveData
 import com.example.pleasegod.R
 import com.example.pleasegod.model.entity.Restroom
 import com.example.pleasegod.model.repository.RestroomRepository
+import io.reactivex.Maybe
+import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.schedulers.Schedulers
@@ -35,21 +37,21 @@ class RestroomViewModel(private val mApplication: Application) : AndroidViewMode
                 pageSize,
                 sigunName
             )
+                .flatMap {
+                    Single.just(it.getPubltolt()?.get(1)?.getRow())
+                }
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe({
+                .subscribe({ restroomList ->
                     Log.d(TAG, "onSuccess()")
-                    Log.d(TAG, "restroomList size: ${it.getPubltolt()?.get(1)?.getRow()?.size}")
+                    Log.d(TAG, "restroomList size: ${restroomList?.size}")
 
-                    it.getPubltolt()?.get(1)?.getRow().let { restroomList ->
-                        mRestroomLiveData.postValue(restroomList)
+                    restroomList?.let {
+                        mRestroomLiveData.postValue(it)
                     }
                 }, {
                     Log.d(TAG, "onError()")
                     Log.d(TAG, it.message)
-                }, {
-                    Log.d(TAG, "onComplete()")
-                    Log.d(TAG, "returned value is null")
                 })
         )
     }
