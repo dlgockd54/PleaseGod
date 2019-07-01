@@ -1,6 +1,7 @@
 package com.example.pleasegod.view.adapter
 
 import android.content.Context
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -29,12 +30,15 @@ class RestroomListAdapter(private val mContext: Context, private val mRestoomLis
     override fun getItemCount(): Int = mRestoomList.size
 
     override fun onBindViewHolder(holder: RestroomViewHolder, position: Int) {
-        holder.let {
-            val restroom: Restroom = mRestoomList[position]
+        mRestoomList[position].let { restroom ->
+            holder.mRestroomNameTextView.text = restroom.pbctlt_plc_nm
+            holder.mRoadNameAddressTextView.text = restroom.refine_roadnm_addr
+            holder.mRegularTimeTextView.text = restroom.open_tm_info
+            holder.itemView.setOnClickListener {
+                Log.d(TAG, "onClick()")
 
-            it.mRestroomNameTextView.text = restroom.pbctlt_plc_nm
-            it.mRoadNameAddressTextView.text = restroom.refine_roadnm_addr
-            it.mRegularTimeTextView.text = restroom.open_tm_info
+
+            }
         }
     }
 
