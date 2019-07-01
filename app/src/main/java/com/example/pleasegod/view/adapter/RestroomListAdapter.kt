@@ -7,14 +7,14 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.pleasegod.R
-import com.example.pleasegod.model.RestroomItem
+import com.example.pleasegod.model.entity.Restroom
 import kotlinx.android.synthetic.main.item_restroom.view.*
 
 /**
  * Created by hclee on 2019-06-30.
  */
 
-class RestroomListAdapter(private val mContext: Context, private val mRestoomList: MutableList<RestroomItem>) :
+class RestroomListAdapter(private val mContext: Context, private val mRestoomList: MutableList<Restroom>) :
     RecyclerView.Adapter<RestroomListAdapter.RestroomViewHolder>() {
     companion object {
         val TAG: String = RestroomListAdapter::class.java.simpleName
@@ -30,11 +30,11 @@ class RestroomListAdapter(private val mContext: Context, private val mRestoomLis
 
     override fun onBindViewHolder(holder: RestroomViewHolder, position: Int) {
         holder.let {
-            val restroom: RestroomItem = mRestoomList[position]
+            val restroom: Restroom = mRestoomList[position]
 
-            it.mRestroomNameTextView.text = restroom.mRestroomName
-            it.mRoadNameAddressTextView.text = restroom.mRoadNameAddress
-            it.mRegularTimeTextView.text = restroom.mRegularHour
+            it.mRestroomNameTextView.text = restroom.pbctlt_plc_nm
+            it.mRoadNameAddressTextView.text = restroom.refine_roadnm_addr
+            it.mRegularTimeTextView.text = restroom.open_tm_info
         }
     }
 
