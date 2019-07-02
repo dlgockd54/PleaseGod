@@ -149,9 +149,17 @@ class RestroomMapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiCl
             tag = tagValue
         }
 
+        /**
+         * If a marker is clicked, onMarkerClick() will be called.
+         * onMarkerClick() returns a boolean that indicates whether
+         * suppress default marker-clicked behaviour or not.
+         * If it returns false, then the default behavior will occur in addition
+         * to custom behaviour.
+         * The default behaviour for a marker click event is
+         * to show its info window(if available) and move the camera
+         * such that the marker is centered on the map.
+         */
         mMap.setOnMarkerClickListener { clickedMarker ->
-            clickedMarker.showInfoWindow()
-
             if (clickedMarker.tag != "current_location") {
                 mPreviousClickedMarker?.let { previousMarKer ->
                     previousMarKer.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW))
@@ -161,7 +169,7 @@ class RestroomMapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiCl
                 mPreviousClickedMarker = clickedMarker
             }
 
-            true
+            false
         }
     }
 
