@@ -20,10 +20,7 @@ import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
-import com.google.android.gms.maps.model.BitmapDescriptor
-import com.google.android.gms.maps.model.BitmapDescriptorFactory
-import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.maps.model.MarkerOptions
+import com.google.android.gms.maps.model.*
 import com.google.android.gms.tasks.Task
 
 class RestroomMapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks,
@@ -40,6 +37,7 @@ class RestroomMapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiCl
     private lateinit var mRestroomViewModel: RestroomViewModel
     private val mRestroomList: MutableList<Restroom> = mutableListOf()
     private var mSelectedRestroomRoadNameAddress: String? = null
+    private var mPreviousClickedMarker: Marker? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -127,7 +125,7 @@ class RestroomMapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiCl
         locationName: String,
         latlng: LatLng,
         snippetStr: String? = null,
-        bitmapDescriptor: BitmapDescriptor = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE)
+        bitmapDescriptor: BitmapDescriptor = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW)
     ) {
         mMap.addMarker(
             MarkerOptions().title(locationName)
@@ -135,6 +133,23 @@ class RestroomMapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiCl
                 .icon(bitmapDescriptor)
                 .snippet(snippetStr)
         )
+
+        mMap.setOnMarkerClickListener { clickedMarker ->
+            clickedMarker.showInfoWindow()
+
+            if (mPreviousClickedMarker == null) {
+                clickedMarker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE))
+            }
+
+            mPreviousClickedMarker?.let { previousMarKer ->
+                previousMarKer.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW))
+                clickedMarker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE))
+            }
+
+            mPreviousClickedMarker = clickedMarker
+
+            true
+        }
     }
 
     private fun getRestroomList(pageIndex: Int = 1, pageSize: Int = 1000, sigunName: String = "고양시") {
