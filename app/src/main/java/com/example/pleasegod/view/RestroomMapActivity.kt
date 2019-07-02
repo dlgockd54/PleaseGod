@@ -6,10 +6,13 @@ import android.location.Location
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
+import android.view.LayoutInflater
+import android.view.View
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import com.example.pleasegod.R
 import com.example.pleasegod.model.entity.Restroom
+import com.example.pleasegod.view.adapter.RestroomInformationAdapter
 import com.example.pleasegod.view.adapter.RestroomListAdapter
 import com.example.pleasegod.viewmodel.RestroomViewModel
 import com.google.android.gms.common.ConnectionResult
@@ -22,6 +25,7 @@ import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.*
 import com.google.android.gms.tasks.Task
+import com.orhanobut.dialogplus.DialogPlus
 
 class RestroomMapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks,
     GoogleApiClient.OnConnectionFailedListener {
@@ -37,6 +41,7 @@ class RestroomMapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiCl
     private lateinit var mRestroomViewModel: RestroomViewModel
     private val mRestroomList: MutableList<Restroom> = mutableListOf()
     private var mSelectedRestroomRoadNameAddress: String? = null
+    private lateinit var mClickedRestroom: Restroom
     private var mPreviousClickedMarker: Marker? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -128,6 +133,18 @@ class RestroomMapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiCl
         }
     }
 
+    private fun changeClickedRestroom(marker: Marker) {
+        val restroomRoadNameAddress: String = marker.snippet
+
+        for (restroom in mRestroomList) {
+            if (restroom.refine_roadnm_addr == restroomRoadNameAddress) {
+                mClickedRestroom = restroom
+
+                break
+            }
+        }
+    }
+
     private fun addMarker(
         locationName: String,
         latlng: LatLng,
@@ -143,10 +160,16 @@ class RestroomMapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiCl
         ).apply {
             if (iconValue == BitmapDescriptorFactory.HUE_AZURE) {
                 mPreviousClickedMarker = this
+
+                changeClickedRestroom(this)
                 showInfoWindow()
             }
 
             tag = tagValue
+        }
+
+        mMap.setOnInfoWindowClickListener {
+            showRestroomInformationDialog()
         }
 
         /**
@@ -165,12 +188,30 @@ class RestroomMapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiCl
                     previousMarKer.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW))
                     clickedMarker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE))
                 }
+                changeClickedRestroom(clickedMarker)
+                showRestroomInformationDialog()
 
                 mPreviousClickedMarker = clickedMarker
             }
 
             false
         }
+    }
+
+    private fun showRestroomInformationDialog() {
+        val adapter: RestroomInformationAdapter =
+            RestroomInformationAdapter(
+                this@RestroomMapActivity,
+                mClickedRestroom
+            )
+        val dialog: DialogPlus = DialogPlus.newDialog(this@RestroomMapActivity)
+            .setOnItemClickListener { dialog, item, view, position -> }
+            .setOnDismissListener { }
+            .setExpanded(true)
+            .setAdapter(adapter)
+            .create()
+
+        dialog.show()
     }
 
     private fun getRestroomList(pageIndex: Int = 1, pageSize: Int = 1000, sigunName: String = "고양시") {
