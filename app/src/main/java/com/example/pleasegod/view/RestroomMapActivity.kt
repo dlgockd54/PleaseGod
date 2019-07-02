@@ -83,11 +83,20 @@ class RestroomMapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiCl
                         val latLng: LatLng = LatLng(latitude, longitude)
                         val snippet: String = restroom.refine_roadnm_addr
 
-                        addMarker(
-                            restroom.pbctlt_plc_nm,
-                            latLng,
-                            snippet
-                        )
+                        if (restroom.refine_roadnm_addr == mSelectedRestroomRoadNameAddress) {
+                            addMarker(
+                                restroom.pbctlt_plc_nm,
+                                latLng,
+                                snippet,
+                                BitmapDescriptorFactory.HUE_AZURE
+                            )
+                        } else {
+                            addMarker(
+                                restroom.pbctlt_plc_nm,
+                                latLng,
+                                snippet
+                            )
+                        }
                     }
                 }
             }
@@ -105,7 +114,9 @@ class RestroomMapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiCl
                             addMarker(
                                 getString(R.string.current_location),
                                 mCurrentLatLng,
-                                BitmapDescriptorFactory.defaultMarker()
+                                null,
+                                BitmapDescriptorFactory.HUE_RED,
+                                "current_location"
                             )
                         }
                     } else {
@@ -117,36 +128,38 @@ class RestroomMapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiCl
         }
     }
 
-    private fun addMarker(locationName: String, latlng: LatLng, bitmapDescriptor: BitmapDescriptor) {
-        addMarker(locationName, latlng, null, bitmapDescriptor)
-    }
-
     private fun addMarker(
         locationName: String,
         latlng: LatLng,
-        snippetStr: String? = null,
-        bitmapDescriptor: BitmapDescriptor = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW)
+        snippetStr: String?,
+        iconValue: Float = BitmapDescriptorFactory.HUE_YELLOW,
+        tagValue: Any? = null
     ) {
-        mMap.addMarker(
+        val marker: Marker = mMap.addMarker(
             MarkerOptions().title(locationName)
                 .position(latlng)
-                .icon(bitmapDescriptor)
+                .icon(BitmapDescriptorFactory.defaultMarker(iconValue))
                 .snippet(snippetStr)
-        )
+        ).apply {
+            if (iconValue == BitmapDescriptorFactory.HUE_AZURE) {
+                mPreviousClickedMarker = this
+                showInfoWindow()
+            }
+
+            tag = tagValue
+        }
 
         mMap.setOnMarkerClickListener { clickedMarker ->
             clickedMarker.showInfoWindow()
 
-            if (mPreviousClickedMarker == null) {
-                clickedMarker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE))
-            }
+            if (clickedMarker.tag != "current_location") {
+                mPreviousClickedMarker?.let { previousMarKer ->
+                    previousMarKer.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW))
+                    clickedMarker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE))
+                }
 
-            mPreviousClickedMarker?.let { previousMarKer ->
-                previousMarKer.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW))
-                clickedMarker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE))
+                mPreviousClickedMarker = clickedMarker
             }
-
-            mPreviousClickedMarker = clickedMarker
 
             true
         }
@@ -206,8 +219,6 @@ class RestroomMapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiCl
                 break
             }
         }
-
-        Log.d(TAG, "못 찾음")
     }
 
     override fun onBackPressed() {
