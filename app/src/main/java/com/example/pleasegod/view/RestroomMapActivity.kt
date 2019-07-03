@@ -207,7 +207,7 @@ class RestroomMapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiCl
         val dialog: DialogPlus = DialogPlus.newDialog(this@RestroomMapActivity)
             .setOnItemClickListener { dialog, item, view, position -> }
             .setOnDismissListener { }
-            .setExpanded(true)
+//            .setExpanded(true)
             .setAdapter(adapter)
             .create()
 
