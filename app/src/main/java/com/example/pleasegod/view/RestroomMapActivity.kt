@@ -226,7 +226,7 @@ class RestroomMapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiCl
 
     private fun showRestroomInformationDialog() {
         if (mRestroomInformationAdapter == null) {
-            mRestroomInformationAdapter = RestroomInformationAdapter(this@RestroomMapActivity, mClickedRestroom)
+            mRestroomInformationAdapter = RestroomInformationAdapter(this@RestroomMapActivity, mCurrentLatLng, mClickedRestroom)
         } else {
             mRestroomInformationAdapter?.mRestroom = mClickedRestroom
         }

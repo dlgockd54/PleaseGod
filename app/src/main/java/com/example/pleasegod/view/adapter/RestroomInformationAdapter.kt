@@ -1,19 +1,22 @@
 package com.example.pleasegod.view.adapter
 
 import android.content.Context
+import android.location.Location
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.BaseAdapter
 import com.example.pleasegod.R
 import com.example.pleasegod.model.entity.Restroom
+import com.google.android.gms.maps.model.LatLng
 import kotlinx.android.synthetic.main.item_restroom_information.view.*
 
 /**
  * Created by hclee on 2019-07-02.
  */
 
-class RestroomInformationAdapter(private val mContext: Context, var mRestroom: Restroom) : BaseAdapter() {
+class RestroomInformationAdapter(private val mContext: Context, var mCurrentLatLng: LatLng, var mRestroom: Restroom) :
+    BaseAdapter() {
     override fun getView(position: Int, converView: View?, parent: ViewGroup?): View {
         var view: View? = converView
 
@@ -23,6 +26,22 @@ class RestroomInformationAdapter(private val mContext: Context, var mRestroom: R
             view.tv_restroom_info_name.text = mRestroom.pbctlt_plc_nm
             view.tv_restroom_info_open_time.text = "개방 시간: ${mRestroom.open_tm_info}"
             view.tv_restroom_info_road_name_address.text = mRestroom.refine_roadnm_addr
+
+            if (mRestroom.refine_wgs84_lat != null && mRestroom.refine_wgs84_logt != null) {
+                val distanceArr: FloatArray = FloatArray(1)
+
+                Location.distanceBetween(
+                    mCurrentLatLng.latitude,
+                    mCurrentLatLng.longitude,
+                    mRestroom.refine_wgs84_lat!!.toDouble(),
+                    mRestroom.refine_wgs84_logt!!.toDouble(),
+                    distanceArr
+                )
+
+                view.tv_restroom_info_distance.text = "현재 위치로부터의 직선거리: ${distanceArr[0]}m"
+            } else {
+                view.tv_restroom_info_distance.visibility = View.GONE
+            }
 
             if (mRestroom.male_female_toilet_yn == null) {
                 view.tv_restroom_info_male_female_toilet.visibility = View.GONE
@@ -57,7 +76,8 @@ class RestroomInformationAdapter(private val mContext: Context, var mRestroom: R
             if (mRestroom.female_dspsn_wtrcls_cnt == null) {
                 view.tv_restroom_info_female_dspsn_wtrcls_cnt.visibility = View.GONE
             } else {
-                view.tv_restroom_info_female_dspsn_wtrcls_cnt.text = "여성용-장애인용 대변기 수: ${mRestroom.female_dspsn_wtrcls_cnt}"
+                view.tv_restroom_info_female_dspsn_wtrcls_cnt.text =
+                    "여성용-장애인용 대변기 수: ${mRestroom.female_dspsn_wtrcls_cnt}"
             }
         }
 
