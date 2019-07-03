@@ -306,6 +306,12 @@ class RestroomMapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiCl
                 it.isMyLocationButtonEnabled = true
                 it.isZoomControlsEnabled = true
             }
+
+            setOnMapClickListener {
+                if(search_view.isSearchOpen) {
+                    search_view.closeSearch()
+                }
+            }
         }
 
         setCurrentLocation()
