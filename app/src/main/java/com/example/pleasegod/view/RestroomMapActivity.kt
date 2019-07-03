@@ -31,7 +31,7 @@ import com.orhanobut.dialogplus.DialogPlus
 import kotlinx.android.synthetic.main.activity_restroom_map.*
 
 class RestroomMapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks,
-        GoogleApiClient.OnConnectionFailedListener {
+        GoogleApiClient.OnConnectionFailedListener, GoogleMap.OnMarkerClickListener {
     companion object {
         val TAG: String = RestroomMapActivity::class.java.simpleName
         val DEFAULT_ZOOM: Float = 15f
@@ -49,6 +49,7 @@ class RestroomMapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiCl
     private var mPreviousClickedMarker: Marker? = null
     private var mRestroomInformationAdapter: RestroomInformationAdapter? = null
     private var mPolylineToRestroom: Polyline? = null
+    private val mMarkerMap: HashMap<Restroom, Marker> = HashMap<Restroom, Marker>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -77,7 +78,15 @@ class RestroomMapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiCl
             setEllipsize(true)
             setOnQueryTextListener(object : MaterialSearchView.OnQueryTextListener {
                 override fun onQueryTextSubmit(query: String?): Boolean {
-                    return false
+                    Log.d(TAG, query)
+
+                    query?.let {
+                        searchRestroomByName(query)
+                    }
+
+                    search_view.closeSearch()
+
+                    return true
                 }
 
                 override fun onQueryTextChange(newText: String?): Boolean {
@@ -108,11 +117,34 @@ class RestroomMapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiCl
             })
         }
         mGoogleApiClient = GoogleApiClient.Builder(this@RestroomMapActivity)
-            .addConnectionCallbacks(this@RestroomMapActivity)
-            .addOnConnectionFailedListener(this@RestroomMapActivity)
-            .addApi(LocationServices.API)
-            .build()
+                .addConnectionCallbacks(this@RestroomMapActivity)
+                .addOnConnectionFailedListener(this@RestroomMapActivity)
+                .addApi(LocationServices.API)
+                .build()
         mFusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this)
+    }
+
+    private fun searchRestroomByName(query: String) {
+        for (restroom in mRestroomList) {
+            if (restroom.pbctlt_plc_nm.contains(query)) {
+                Log.d(TAG, "${restroom.pbctlt_plc_nm} contains $query")
+
+                if (restroom.refine_wgs84_lat == null || restroom.refine_wgs84_logt == null) {
+                    Log.d(TAG, "selected restroom location is null")
+                } else {
+                    changeClickedRestroom(restroom)
+
+                    mMap.moveCamera(
+                            CameraUpdateFactory.newLatLngZoom(LatLng(restroom.refine_wgs84_lat.toDouble(),
+                                    restroom.refine_wgs84_logt.toDouble()),
+                                    DEFAULT_ZOOM))
+//                    (mMarkerMap.get(restroom) as Marker).showInfoWindow()
+                    onMarkerClick((mMarkerMap[restroom]))
+                }
+
+                break
+            }
+        }
     }
 
     private fun addMarkerForRestroomList() {
@@ -124,21 +156,24 @@ class RestroomMapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiCl
                         val longitude: Double = restroom.refine_wgs84_logt.toDouble()
                         val latLng: LatLng = LatLng(latitude, longitude)
                         val snippet: String = restroom.refine_roadnm_addr
+                        var marker: Marker
 
                         if (restroom.refine_roadnm_addr == mSelectedRestroomRoadNameAddress) {
-                            addMarker(
-                                restroom.pbctlt_plc_nm,
-                                latLng,
-                                snippet,
-                                BitmapDescriptorFactory.HUE_AZURE
+                            marker = addMarker(
+                                    restroom.pbctlt_plc_nm,
+                                    latLng,
+                                    snippet,
+                                    BitmapDescriptorFactory.HUE_AZURE
                             )
                         } else {
-                            addMarker(
-                                restroom.pbctlt_plc_nm,
-                                latLng,
-                                snippet
+                            marker = addMarker(
+                                    restroom.pbctlt_plc_nm,
+                                    latLng,
+                                    snippet
                             )
                         }
+
+                        mMarkerMap.put(restroom, marker)
                     }
                 }
             }
@@ -154,11 +189,11 @@ class RestroomMapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiCl
                             mCurrentLatLng = LatLng(it.latitude, it.longitude)
 
                             addMarker(
-                                getString(R.string.current_location),
-                                mCurrentLatLng,
-                                null,
-                                BitmapDescriptorFactory.HUE_RED,
-                                "current_location"
+                                    getString(R.string.current_location),
+                                    mCurrentLatLng,
+                                    null,
+                                    BitmapDescriptorFactory.HUE_RED,
+                                    "current_location"
                             )
                         }
                     } else {
@@ -168,6 +203,10 @@ class RestroomMapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiCl
                 }
             }
         }
+    }
+
+    private fun changeClickedRestroom(restroom: Restroom) {
+        mClickedRestroom = restroom
     }
 
     private fun changeClickedRestroom(marker: Marker) {
@@ -183,17 +222,17 @@ class RestroomMapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiCl
     }
 
     private fun addMarker(
-        locationName: String,
-        latlng: LatLng,
-        snippetStr: String?,
-        iconValue: Float = BitmapDescriptorFactory.HUE_YELLOW,
-        tagValue: Any? = null
-    ) {
+            locationName: String,
+            latlng: LatLng,
+            snippetStr: String?,
+            iconValue: Float = BitmapDescriptorFactory.HUE_YELLOW,
+            tagValue: Any? = null
+    ): Marker {
         val marker: Marker = mMap.addMarker(
-            MarkerOptions().title(locationName)
-                .position(latlng)
-                .icon(BitmapDescriptorFactory.defaultMarker(iconValue))
-                .snippet(snippetStr)
+                MarkerOptions().title(locationName)
+                        .position(latlng)
+                        .icon(BitmapDescriptorFactory.defaultMarker(iconValue))
+                        .snippet(snippetStr)
         ).apply {
             if (iconValue == BitmapDescriptorFactory.HUE_AZURE) {
                 mPreviousClickedMarker = this
@@ -210,19 +249,26 @@ class RestroomMapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiCl
             showRestroomInformationDialog()
         }
 
-        /**
-         * If a marker is clicked, onMarkerClick() will be called.
-         * onMarkerClick() returns a boolean that indicates whether
-         * suppress default marker-clicked behaviour or not.
-         * If it returns false, then the default behavior will occur in addition
-         * to custom behaviour.
-         * The default behaviour for a marker click event is
-         * to show its info window(if available) and move the camera
-         * such that the marker is centered on the map.
-         */
-        mMap.setOnMarkerClickListener { clickedMarker ->
+        mMap.setOnMarkerClickListener(this@RestroomMapActivity)
+
+        return marker
+    }
+
+    /**
+     * If a marker is clicked, onMarkerClick() will be called.
+     * onMarkerClick() returns a boolean that indicates whether
+     * suppress default marker-clicked behaviour or not.
+     * If it returns false, then the default behavior will occur in addition
+     * to custom behaviour.
+     * The default behaviour for a marker click event is
+     * to show its info window(if available) and move the camera
+     * such that the marker is centered on the map.
+     */
+    override fun onMarkerClick(clickedMarker: Marker?): Boolean {
+        clickedMarker?.let {
             if (clickedMarker.tag != "current_location") {
                 mPreviousClickedMarker?.let { previousMarKer ->
+                    it.hideInfoWindow()
                     previousMarKer.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW))
                     clickedMarker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE))
                 }
@@ -230,11 +276,13 @@ class RestroomMapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiCl
                 showRestroomInformationDialog()
                 drawLineToRestroom(mClickedRestroom)
 
+                clickedMarker.showInfoWindow()
+
                 mPreviousClickedMarker = clickedMarker
             }
-
-            false
         }
+
+        return false
     }
 
     private fun drawLineToRestroom(restroom: Restroom) {
@@ -250,11 +298,11 @@ class RestroomMapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiCl
                 }
 
                 mPolylineToRestroom = mMap.addPolyline(
-                    PolylineOptions()
-                        .color(Color.RED)
-                        .width(5f)
-                        .add(mCurrentLatLng)
-                        .add(LatLng(latitude, longitude))
+                        PolylineOptions()
+                                .color(Color.RED)
+                                .width(5f)
+                                .add(mCurrentLatLng)
+                                .add(LatLng(latitude, longitude))
                 )
             }
         }
@@ -270,10 +318,10 @@ class RestroomMapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiCl
         mRestroomInformationAdapter?.notifyDataSetChanged()
 
         val dialog: DialogPlus = DialogPlus.newDialog(this@RestroomMapActivity)
-            .setOnItemClickListener { dialog, item, view, position -> }
-            .setOnDismissListener { }
-            .setAdapter(mRestroomInformationAdapter)
-            .create()
+                .setOnItemClickListener { dialog, item, view, position -> }
+                .setOnDismissListener { }
+                .setAdapter(mRestroomInformationAdapter)
+                .create()
 
         dialog.show()
     }
@@ -308,7 +356,7 @@ class RestroomMapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiCl
             }
 
             setOnMapClickListener {
-                if(search_view.isSearchOpen) {
+                if (search_view.isSearchOpen) {
                     search_view.closeSearch()
                 }
             }
@@ -327,11 +375,13 @@ class RestroomMapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiCl
                     Log.d(TAG, "selected restroom location is null")
                 } else {
                     mMap.moveCamera(
-                        CameraUpdateFactory.newLatLngZoom(
-                            LatLng(restroom.refine_wgs84_lat.toDouble(), restroom.refine_wgs84_logt.toDouble()),
-                            DEFAULT_ZOOM
-                        )
+                            CameraUpdateFactory.newLatLngZoom(
+                                    LatLng(restroom.refine_wgs84_lat.toDouble(), restroom.refine_wgs84_logt.toDouble()),
+                                    DEFAULT_ZOOM
+                            )
                     )
+
+                    mPreviousClickedMarker = mMarkerMap[restroom]
                 }
 
                 break
