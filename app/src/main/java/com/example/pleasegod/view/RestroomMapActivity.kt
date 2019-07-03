@@ -2,12 +2,11 @@ package com.example.pleasegod.view
 
 import android.Manifest
 import android.content.pm.PackageManager
+import android.graphics.Color
 import android.location.Location
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
-import android.view.LayoutInflater
-import android.view.View
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import com.example.pleasegod.R
@@ -44,6 +43,7 @@ class RestroomMapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiCl
     private lateinit var mClickedRestroom: Restroom
     private var mPreviousClickedMarker: Marker? = null
     private var mRestroomInformationAdapter: RestroomInformationAdapter? = null
+    private var mPolylineToRestroom: Polyline? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -164,6 +164,7 @@ class RestroomMapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiCl
 
                 changeClickedRestroom(this)
                 showInfoWindow()
+                drawLineToRestroom(mClickedRestroom)
             }
 
             tag = tagValue
@@ -191,11 +192,35 @@ class RestroomMapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiCl
                 }
                 changeClickedRestroom(clickedMarker)
                 showRestroomInformationDialog()
+                drawLineToRestroom(mClickedRestroom)
 
                 mPreviousClickedMarker = clickedMarker
             }
 
             false
+        }
+    }
+
+    private fun drawLineToRestroom(restroom: Restroom) {
+        Log.d(TAG, "drawRouteToRestroom()")
+
+        if (restroom.refine_wgs84_lat != null) {
+            if (restroom.refine_wgs84_logt != null) {
+                val latitude: Double = restroom.refine_wgs84_lat.toDouble()
+                val longitude: Double = restroom.refine_wgs84_logt.toDouble()
+
+                mPolylineToRestroom?.let {
+                    it.remove()
+                }
+
+                mPolylineToRestroom = mMap.addPolyline(
+                    PolylineOptions()
+                        .color(Color.RED)
+                        .width(5f)
+                        .add(mCurrentLatLng)
+                        .add(LatLng(latitude, longitude))
+                )
+            }
         }
     }
 
