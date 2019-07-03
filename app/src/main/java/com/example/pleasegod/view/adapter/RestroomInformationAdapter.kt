@@ -13,7 +13,7 @@ import kotlinx.android.synthetic.main.item_restroom_information.view.*
  * Created by hclee on 2019-07-02.
  */
 
-class RestroomInformationAdapter(private val mContext: Context, private val mRestroom: Restroom) : BaseAdapter() {
+class RestroomInformationAdapter(private val mContext: Context, var mRestroom: Restroom) : BaseAdapter() {
     override fun getView(position: Int, converView: View?, parent: ViewGroup?): View {
         var view: View? = converView
 

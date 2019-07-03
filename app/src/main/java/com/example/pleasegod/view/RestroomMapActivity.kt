@@ -43,6 +43,7 @@ class RestroomMapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiCl
     private var mSelectedRestroomRoadNameAddress: String? = null
     private lateinit var mClickedRestroom: Restroom
     private var mPreviousClickedMarker: Marker? = null
+    private var mRestroomInformationAdapter: RestroomInformationAdapter? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -199,16 +200,18 @@ class RestroomMapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiCl
     }
 
     private fun showRestroomInformationDialog() {
-        val adapter: RestroomInformationAdapter =
-            RestroomInformationAdapter(
-                this@RestroomMapActivity,
-                mClickedRestroom
-            )
+        if (mRestroomInformationAdapter == null) {
+            mRestroomInformationAdapter = RestroomInformationAdapter(this@RestroomMapActivity, mClickedRestroom)
+        } else {
+            mRestroomInformationAdapter?.mRestroom = mClickedRestroom
+        }
+
+        mRestroomInformationAdapter?.notifyDataSetChanged()
+
         val dialog: DialogPlus = DialogPlus.newDialog(this@RestroomMapActivity)
             .setOnItemClickListener { dialog, item, view, position -> }
             .setOnDismissListener { }
-//            .setExpanded(true)
-            .setAdapter(adapter)
+            .setAdapter(mRestroomInformationAdapter)
             .create()
 
         dialog.show()
@@ -236,7 +239,6 @@ class RestroomMapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiCl
         mMap = googleMap.apply {
             if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
                 isMyLocationEnabled = true
-//                mFusedLocationProviderClient.requestLocationUpdates(mLoca)
             }
 
             uiSettings.let {
