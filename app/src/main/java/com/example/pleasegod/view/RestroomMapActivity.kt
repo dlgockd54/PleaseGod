@@ -7,6 +7,8 @@ import android.location.Location
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
+import android.view.Menu
+import androidx.appcompat.widget.Toolbar
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import com.example.pleasegod.R
@@ -24,15 +26,18 @@ import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.*
 import com.google.android.gms.tasks.Task
+import com.miguelcatalan.materialsearchview.MaterialSearchView
 import com.orhanobut.dialogplus.DialogPlus
+import kotlinx.android.synthetic.main.activity_restroom_map.*
 
 class RestroomMapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks,
-    GoogleApiClient.OnConnectionFailedListener {
+        GoogleApiClient.OnConnectionFailedListener {
     companion object {
         val TAG: String = RestroomMapActivity::class.java.simpleName
         val DEFAULT_ZOOM: Float = 15f
     }
 
+    private lateinit var mMaterialSearchView: MaterialSearchView
     private lateinit var mGoogleApiClient: GoogleApiClient
     private lateinit var mMap: GoogleMap
     private lateinit var mFusedLocationProviderClient: FusedLocationProviderClient
@@ -49,6 +54,8 @@ class RestroomMapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiCl
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_restroom_map)
 
+        setSupportActionBar(map_toolbar as Toolbar)
+
         val mapFragment = (supportFragmentManager.findFragmentById(R.id.restroom_map) as SupportMapFragment).apply {
             getMapAsync(this@RestroomMapActivity)
         }
@@ -57,7 +64,36 @@ class RestroomMapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiCl
         getRestroomList()
     }
 
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(R.menu.menu_search, menu)
+        search_view.setMenuItem(menu?.findItem(R.id.action_search))
+
+        return true
+    }
+
     private fun init() {
+        mMaterialSearchView = search_view.apply {
+            setCursorDrawable(R.drawable.color_cursor_white)
+            setEllipsize(true)
+            setOnQueryTextListener(object : MaterialSearchView.OnQueryTextListener {
+                override fun onQueryTextSubmit(query: String?): Boolean {
+                    return false
+                }
+
+                override fun onQueryTextChange(newText: String?): Boolean {
+                    return false
+                }
+            })
+            setOnSearchViewListener(object : MaterialSearchView.SearchViewListener {
+                override fun onSearchViewShown() {
+                    Log.d(TAG, "onSearchViewShown()")
+                }
+
+                override fun onSearchViewClosed() {
+                    Log.d(TAG, "onSearchViewClosed()")
+                }
+            })
+        }
         intent.getStringExtra(RestroomListAdapter.INTENT_KEY)?.let {
             mSelectedRestroomRoadNameAddress = it
         }
@@ -300,8 +336,12 @@ class RestroomMapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiCl
     override fun onBackPressed() {
         super.onBackPressed()
 
-        finish()
-        overridePendingTransition(R.anim.animation_slide_from_left, R.anim.animation_slide_to_right)
+        if (search_view.isSearchOpen) {
+            search_view.closeSearch()
+        } else {
+            finish()
+            overridePendingTransition(R.anim.animation_slide_from_left, R.anim.animation_slide_to_right)
+        }
     }
 
     override fun onDestroy() {
