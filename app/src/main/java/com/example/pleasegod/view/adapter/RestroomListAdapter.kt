@@ -72,35 +72,26 @@ class RestroomListAdapter(private val mActivity: Activity, private val mRestroom
         return object : Filter() {
             override fun performFiltering(charSequence: CharSequence?): FilterResults {
                 val query: String = charSequence.toString()
-
-                Log.d(TAG, "query: $query")
-
                 var filteredList: MutableList<Restroom> = mutableListOf()
                 val filterResults: FilterResults = FilterResults()
-
-                Log.d(TAG, "mTotalRestroomList.size: ${mTotalRestroomList.size}")
 
                 if (query.isEmpty()) {
                     filteredList = mTotalRestroomList
                 } else {
                     for (restroom in mTotalRestroomList) {
                         if (restroom.pbctlt_plc_nm != null) {
-                            if (restroom.pbctlt_plc_nm.contains(query)) {
+                            if (restroom.pbctlt_plc_nm.contains(query) ||
+                                (restroom.refine_roadnm_addr != null && restroom.refine_roadnm_addr.contains(query))) {
                                 filteredList.add(restroom)
                             }
                         } else if (restroom.refine_roadnm_addr != null) {
-                            if (restroom.refine_roadnm_addr.contains(query)) {
+                            if (restroom.pbctlt_plc_nm != null &&
+                                restroom.pbctlt_plc_nm.contains(query) || restroom.refine_roadnm_addr.contains(query)) {
                                 filteredList.add(restroom)
                             }
-                        } else if (restroom.pbctlt_plc_nm == null) {
-                            Log.d(TAG, "name is null!")
-                        } else if (restroom.refine_roadnm_addr == null) {
-                            Log.d(TAG, "road addr is null!")
                         }
                     }
                 }
-
-                Log.d(TAG, "filteredList size: ${filteredList.size}")
 
                 filterResults.count = filteredList.size
                 filterResults.values = filteredList
