@@ -36,7 +36,9 @@ import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.miguelcatalan.materialsearchview.MaterialSearchView
 import com.orhanobut.dialogplus.DialogPlus
 import kotlinx.android.synthetic.main.activity_restroom_map.*
+import kotlinx.android.synthetic.main.bottom_sheet_dialog.*
 import kotlinx.android.synthetic.main.bottom_sheet_dialog.view.*
+import kotlinx.android.synthetic.main.bottom_sheet_dialog.view.rv_searched_restroom_list
 
 class RestroomMapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks,
     GoogleApiClient.OnConnectionFailedListener, GoogleMap.OnMarkerClickListener {
@@ -58,6 +60,7 @@ class RestroomMapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiCl
     private var mRestroomInformationAdapter: RestroomInformationAdapter? = null
     private var mPolylineToRestroom: Polyline? = null
     private val mMarkerMap: HashMap<Restroom, Marker> = HashMap<Restroom, Marker>()
+    private lateinit var mBottomSheetDialog: BottomSheetDialog
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -142,19 +145,8 @@ class RestroomMapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiCl
                 if (restroom.refine_wgs84_lat == null || restroom.refine_wgs84_logt == null) {
                     Log.d(TAG, "selected restroom location is null")
                 } else {
-//                    changeClickedRestroom(restroom)
-//
-//                    mMap.moveCamera(
-//                            CameraUpdateFactory.newLatLngZoom(LatLng(restroom.refine_wgs84_lat.toDouble(),
-//                                    restroom.refine_wgs84_logt.toDouble()),
-//                                    DEFAULT_ZOOM))
-////                    (mMarkerMap.get(restroom) as Marker).showInfoWindow()
-//                    onMarkerClick((mMarkerMap[restroom]))
-
                     searchedRestroomList.add(restroom)
                 }
-
-//                break
             }
         }
 
@@ -166,16 +158,42 @@ class RestroomMapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiCl
             LayoutInflater.from(this@RestroomMapActivity).inflate(R.layout.bottom_sheet_dialog, null).apply {
                 rv_searched_restroom_list.apply {
                     layoutManager = LinearLayoutManager(this@RestroomMapActivity)
-                    adapter = SearchedRestroomAdapter(this@RestroomMapActivity, restroomList)
+                    adapter = SearchedRestroomAdapter(
+                        this@RestroomMapActivity,
+                        restroomList,
+                        object : SearchedRestroomAdapter.RestroomClickListener {
+                            override fun onRestroomClick(restroom: Restroom) {
+                                restroom.refine_wgs84_lat?.let {
+                                    restroom.refine_wgs84_logt?.let {
+                                        changeClickedRestroom(restroom)
+
+                                        mMap.moveCamera(
+                                            CameraUpdateFactory.newLatLngZoom(
+                                                LatLng(
+                                                    restroom.refine_wgs84_lat.toDouble(),
+                                                    restroom.refine_wgs84_logt.toDouble()
+                                                ),
+                                                DEFAULT_ZOOM
+                                            )
+                                        )
+                                        onMarkerClick((mMarkerMap[restroom]))
+                                    }
+                                }
+
+                                mBottomSheetDialog.dismiss()
+                            }
+                        }
+                    )
                     addItemDecoration(DividerItemDecoration(this@RestroomMapActivity, LinearLayoutManager.VERTICAL))
                 }
             }
-        val bottomSheetDialog: BottomSheetDialog = BottomSheetDialog(this@RestroomMapActivity).apply {
+        mBottomSheetDialog = BottomSheetDialog(this@RestroomMapActivity).apply {
             setContentView(bottomSheetView)
             setOnShowListener {
                 Log.d(TAG, "onShow()")
             }
         }
+
         val bottomSheetBehavior: BottomSheetBehavior<View> =
             BottomSheetBehavior.from(bottomSheetView.parent as View).apply {
                 setBottomSheetCallback(object : BottomSheetBehavior.BottomSheetCallback() {
@@ -202,7 +220,7 @@ class RestroomMapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiCl
                             BottomSheetBehavior.STATE_HIDDEN -> {
                                 Log.d(TAG, "hidden")
 
-                                bottomSheetDialog.dismiss()
+                                mBottomSheetDialog.dismiss()
                             }
                             BottomSheetBehavior.STATE_HALF_EXPANDED -> {
                                 Log.d(TAG, "half expanded")
@@ -212,7 +230,7 @@ class RestroomMapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiCl
                 })
             }
 
-        bottomSheetDialog.show()
+        mBottomSheetDialog.show()
     }
 
     private fun addMarkerForRestroomList() {

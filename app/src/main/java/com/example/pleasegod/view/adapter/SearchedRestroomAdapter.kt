@@ -15,7 +15,11 @@ import kotlinx.android.synthetic.main.item_restroom_searched.view.*
  * Created by hclee on 2019-07-04.
  */
 
-class SearchedRestroomAdapter(private val mContext: Context, val mRestroomList: MutableList<Restroom>) :
+class SearchedRestroomAdapter(
+    private val mContext: Context,
+    val mRestroomList: MutableList<Restroom>,
+    private val mRestroomClickListener: RestroomClickListener
+) :
     RecyclerView.Adapter<SearchedRestroomAdapter.SearchedRestroomViewHolder>() {
     companion object {
         val TAG: String = SearchedRestroomAdapter::class.java.simpleName
@@ -34,7 +38,7 @@ class SearchedRestroomAdapter(private val mContext: Context, val mRestroomList: 
             it.mRestroomNameTextView.text = mRestroomList[position].pbctlt_plc_nm
             it.mRestroomRoadNameAddressTextView.text = mRestroomList[position].refine_roadnm_addr
             it.itemView.setOnClickListener {
-                Log.d(TAG, "onClick() - ${mRestroomList[position].pbctlt_plc_nm}")
+                mRestroomClickListener.onRestroomClick(mRestroomList[position])
             }
         }
     }
@@ -42,5 +46,9 @@ class SearchedRestroomAdapter(private val mContext: Context, val mRestroomList: 
     class SearchedRestroomViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val mRestroomNameTextView: TextView = itemView.tv_searched_restroom_name
         val mRestroomRoadNameAddressTextView: TextView = itemView.tv_searched_restroom_road_name_address
+    }
+
+    interface RestroomClickListener {
+        fun onRestroomClick(restroom: Restroom)
     }
 }
