@@ -36,9 +36,7 @@ import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.miguelcatalan.materialsearchview.MaterialSearchView
 import com.orhanobut.dialogplus.DialogPlus
 import kotlinx.android.synthetic.main.activity_restroom_map.*
-import kotlinx.android.synthetic.main.bottom_sheet_dialog.*
-import kotlinx.android.synthetic.main.bottom_sheet_dialog.view.*
-import kotlinx.android.synthetic.main.bottom_sheet_dialog.view.rv_searched_restroom_list
+import kotlinx.android.synthetic.main.bottom_sheet_searched_restroom.view.rv_searched_restroom_list
 
 class RestroomMapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks,
     GoogleApiClient.OnConnectionFailedListener, GoogleMap.OnMarkerClickListener {
@@ -155,7 +153,7 @@ class RestroomMapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiCl
 
     private fun showSearchedRestroomList(restroomList: MutableList<Restroom>) {
         val bottomSheetView: View =
-            LayoutInflater.from(this@RestroomMapActivity).inflate(R.layout.bottom_sheet_dialog, null).apply {
+            LayoutInflater.from(this@RestroomMapActivity).inflate(R.layout.bottom_sheet_searched_restroom, null).apply {
                 rv_searched_restroom_list.apply {
                     layoutManager = LinearLayoutManager(this@RestroomMapActivity)
                     adapter = SearchedRestroomAdapter(
