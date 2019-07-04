@@ -7,14 +7,19 @@ import android.location.Location
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
+import android.view.LayoutInflater
 import android.view.Menu
+import android.view.View
 import androidx.appcompat.widget.Toolbar
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
+import androidx.recyclerview.widget.DividerItemDecoration
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.pleasegod.R
 import com.example.pleasegod.model.entity.Restroom
 import com.example.pleasegod.view.adapter.RestroomInformationAdapter
 import com.example.pleasegod.view.adapter.RestroomListAdapter
+import com.example.pleasegod.view.adapter.SearchedRestroomAdapter
 import com.example.pleasegod.viewmodel.RestroomViewModel
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.api.GoogleApiClient
@@ -26,12 +31,15 @@ import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.*
 import com.google.android.gms.tasks.Task
+import com.google.android.material.bottomsheet.BottomSheetBehavior
+import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.miguelcatalan.materialsearchview.MaterialSearchView
 import com.orhanobut.dialogplus.DialogPlus
 import kotlinx.android.synthetic.main.activity_restroom_map.*
+import kotlinx.android.synthetic.main.bottom_sheet_dialog.view.*
 
 class RestroomMapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks,
-        GoogleApiClient.OnConnectionFailedListener, GoogleMap.OnMarkerClickListener {
+    GoogleApiClient.OnConnectionFailedListener, GoogleMap.OnMarkerClickListener {
     companion object {
         val TAG: String = RestroomMapActivity::class.java.simpleName
         val DEFAULT_ZOOM: Float = 15f
@@ -125,6 +133,8 @@ class RestroomMapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiCl
     }
 
     private fun searchRestroomByName(query: String) {
+        val searchedRestroomList: MutableList<Restroom> = mutableListOf()
+
         for (restroom in mRestroomList) {
             if (restroom.pbctlt_plc_nm.contains(query)) {
                 Log.d(TAG, "${restroom.pbctlt_plc_nm} contains $query")
@@ -132,19 +142,77 @@ class RestroomMapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiCl
                 if (restroom.refine_wgs84_lat == null || restroom.refine_wgs84_logt == null) {
                     Log.d(TAG, "selected restroom location is null")
                 } else {
-                    changeClickedRestroom(restroom)
+//                    changeClickedRestroom(restroom)
+//
+//                    mMap.moveCamera(
+//                            CameraUpdateFactory.newLatLngZoom(LatLng(restroom.refine_wgs84_lat.toDouble(),
+//                                    restroom.refine_wgs84_logt.toDouble()),
+//                                    DEFAULT_ZOOM))
+////                    (mMarkerMap.get(restroom) as Marker).showInfoWindow()
+//                    onMarkerClick((mMarkerMap[restroom]))
 
-                    mMap.moveCamera(
-                            CameraUpdateFactory.newLatLngZoom(LatLng(restroom.refine_wgs84_lat.toDouble(),
-                                    restroom.refine_wgs84_logt.toDouble()),
-                                    DEFAULT_ZOOM))
-//                    (mMarkerMap.get(restroom) as Marker).showInfoWindow()
-                    onMarkerClick((mMarkerMap[restroom]))
+                    searchedRestroomList.add(restroom)
                 }
 
-                break
+//                break
             }
         }
+
+        showSearchedRestroomList(searchedRestroomList)
+    }
+
+    private fun showSearchedRestroomList(restroomList: MutableList<Restroom>) {
+        val bottomSheetView: View =
+            LayoutInflater.from(this@RestroomMapActivity).inflate(R.layout.bottom_sheet_dialog, null).apply {
+                rv_searched_restroom_list.apply {
+                    layoutManager = LinearLayoutManager(this@RestroomMapActivity)
+                    adapter = SearchedRestroomAdapter(this@RestroomMapActivity, restroomList)
+                    addItemDecoration(DividerItemDecoration(this@RestroomMapActivity, LinearLayoutManager.VERTICAL))
+                }
+            }
+        val bottomSheetDialog: BottomSheetDialog = BottomSheetDialog(this@RestroomMapActivity).apply {
+            setContentView(bottomSheetView)
+            setOnShowListener {
+                Log.d(TAG, "onShow()")
+            }
+        }
+        val bottomSheetBehavior: BottomSheetBehavior<View> =
+            BottomSheetBehavior.from(bottomSheetView.parent as View).apply {
+                setBottomSheetCallback(object : BottomSheetBehavior.BottomSheetCallback() {
+                    override fun onSlide(bottomSheet: View, slideOffset: Float) {
+                        Log.d(TAG, "onSlide()")
+                    }
+
+                    override fun onStateChanged(bottomSheet: View, newState: Int) {
+                        Log.d(TAG, "onStateChanged()")
+
+                        when (newState) {
+                            BottomSheetBehavior.STATE_DRAGGING -> {
+                                Log.d(TAG, "dragging")
+                            }
+                            BottomSheetBehavior.STATE_SETTLING -> {
+                                Log.d(TAG, "settling")
+                            }
+                            BottomSheetBehavior.STATE_EXPANDED -> {
+                                Log.d(TAG, "expanded")
+                            }
+                            BottomSheetBehavior.STATE_COLLAPSED -> {
+                                Log.d(TAG, "collapsed")
+                            }
+                            BottomSheetBehavior.STATE_HIDDEN -> {
+                                Log.d(TAG, "hidden")
+
+                                bottomSheetDialog.dismiss()
+                            }
+                            BottomSheetBehavior.STATE_HALF_EXPANDED -> {
+                                Log.d(TAG, "half expanded")
+                            }
+                        }
+                    }
+                })
+            }
+
+        bottomSheetDialog.show()
     }
 
     private fun addMarkerForRestroomList() {
