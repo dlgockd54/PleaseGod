@@ -59,6 +59,7 @@ class RestroomListActivity : AppCompatActivity() {
             setOnClickListener {
                 Log.d(TAG, "onClick()")
 
+                var isQuerySubmitted: Boolean = false
                 val bottomSheetView: View =
                     LayoutInflater.from(this@RestroomListActivity).inflate(R.layout.bottom_sheet_search_view, null)
                         .apply {
@@ -71,6 +72,7 @@ class RestroomListActivity : AppCompatActivity() {
                                             mRestroomListAdapter.filter.filter(query)
                                         }
 
+                                        isQuerySubmitted = true
                                         mBottomSheetDialog.dismiss()
 
                                         return true
@@ -90,6 +92,13 @@ class RestroomListActivity : AppCompatActivity() {
                     setContentView(bottomSheetView)
                     setOnShowListener {
                         Log.d(TAG, "onShow()")
+                    }
+                    setOnDismissListener {
+                        Log.d(TAG, "onDismiss()")
+
+                        if (!isQuerySubmitted) {
+                            mRestroomListAdapter.restoreTotalRestroomData()
+                        }
                     }
                 }
                 val bottomSheetBehavior: BottomSheetBehavior<View> =

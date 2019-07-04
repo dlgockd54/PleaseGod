@@ -34,6 +34,13 @@ class RestroomListAdapter(private val mActivity: Activity, private val mRestroom
         Log.d(TAG, "mTotalRestroomList.size: ${mTotalRestroomList.size}")
     }
 
+    fun restoreTotalRestroomData() {
+        mRestroomList.clear()
+        mRestroomList.addAll(mTotalRestroomList)
+
+        notifyDataSetChanged()
+    }
+
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RestroomViewHolder {
         val view: View =
             LayoutInflater.from(mActivity.applicationContext).inflate(R.layout.item_restroom, parent, false)
