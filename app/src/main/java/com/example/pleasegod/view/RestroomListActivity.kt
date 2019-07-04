@@ -46,6 +46,7 @@ class RestroomListActivity : AppCompatActivity() {
 
                 mRestroomList.clear()
                 mRestroomList.addAll(it)
+                mRestroomListAdapter.copyTotalRestroom()
                 mRestroomListAdapter.notifyDataSetChanged()
                 loading_progress_bar.visibility = View.GONE
             })
@@ -64,10 +65,10 @@ class RestroomListActivity : AppCompatActivity() {
                             search_view_restroom.apply {
                                 setOnQueryTextListener(object : SearchView.OnQueryTextListener {
                                     override fun onQueryTextSubmit(query: String?): Boolean {
-                                        Log.d(RestroomMapActivity.TAG, query)
+                                        Log.d(TAG, query)
 
                                         query?.let {
-
+                                            mRestroomListAdapter.filter.filter(query)
                                         }
 
                                         mBottomSheetDialog.dismiss()
@@ -76,6 +77,10 @@ class RestroomListActivity : AppCompatActivity() {
                                     }
 
                                     override fun onQueryTextChange(newText: String?): Boolean {
+                                        newText?.let {
+                                            mRestroomListAdapter.filter.filter(newText)
+                                        }
+
                                         return false
                                     }
                                 })
