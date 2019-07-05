@@ -15,7 +15,9 @@
         <activity
             android:name=".view.RestroomMapActivity"
             android:theme="@style/NoActionBar" />
-        <activity android:name=".view.RestroomListActivity" />
+        <activity
+                android:name=".view.RestroomListActivity"
+                android:theme="@style/MaterialDrawerTheme.Light.DarkToolbar"/>
         <activity android:name=".view.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
