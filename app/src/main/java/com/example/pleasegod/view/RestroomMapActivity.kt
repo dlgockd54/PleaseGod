@@ -355,7 +355,6 @@ class RestroomMapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiCl
                     clickedMarker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE))
                 }
                 changeClickedRestroom(clickedMarker)
-                showRestroomInformationDialog()
                 drawLineToRestroom(mClickedRestroom)
 
                 clickedMarker.showInfoWindow()
