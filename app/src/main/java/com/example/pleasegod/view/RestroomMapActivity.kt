@@ -17,7 +17,6 @@ import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.pleasegod.R
 import com.example.pleasegod.model.entity.Restroom
-import com.example.pleasegod.view.adapter.RestroomInformationAdapter
 import com.example.pleasegod.view.adapter.RestroomListAdapter
 import com.example.pleasegod.view.adapter.SearchedRestroomAdapter
 import com.example.pleasegod.viewmodel.RestroomViewModel
@@ -55,7 +54,6 @@ class RestroomMapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiCl
     private var mSelectedRestroomRoadNameAddress: String? = null
     private lateinit var mClickedRestroom: Restroom
     private var mPreviousClickedMarker: Marker? = null
-    private var mRestroomInformationAdapter: RestroomInformationAdapter? = null
     private var mPolylineToRestroom: Polyline? = null
     private val mMarkerMap: HashMap<Restroom, Marker> = HashMap<Restroom, Marker>()
     private lateinit var mBottomSheetDialog: BottomSheetDialog
