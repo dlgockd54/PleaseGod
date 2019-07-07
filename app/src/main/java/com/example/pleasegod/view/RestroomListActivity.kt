@@ -50,8 +50,7 @@ class RestroomListActivity : AppCompatActivity() /* , LocationAdapter.OnItemClic
         setSupportActionBar(toolbar_location)
 
         init()
-        getRestroomList()
-//        selectLocation(0)
+        showRestroomList(0)
     }
 
     private fun init() {
@@ -61,15 +60,17 @@ class RestroomListActivity : AppCompatActivity() /* , LocationAdapter.OnItemClic
             .withDisplayBelowStatusBar(false)
             .withActionBarDrawerToggle(true)
             .withActionBarDrawerToggleAnimated(true)
-            .withOnDrawerItemClickListener(object: Drawer.OnDrawerItemClickListener {
+            .withOnDrawerItemClickListener(object : Drawer.OnDrawerItemClickListener {
                 override fun onItemClick(view: View?, position: Int, drawerItem: IDrawerItem<*>): Boolean {
                     Log.d(TAG, "onItemClick() $position")
+
+                    showRestroomList(position)
 
                     return true
                 }
             })
             .apply {
-                for(location in LOCATION_LIST) {
+                for (location in LOCATION_LIST) {
                     addDrawerItems(PrimaryDrawerItem().withName(location))
                 }
             }
@@ -152,6 +153,15 @@ class RestroomListActivity : AppCompatActivity() /* , LocationAdapter.OnItemClic
                 mBottomSheetDialog.show()
             }
         }
+    }
+
+    private fun showRestroomList(position: Int) {
+        getRestroomList(LOCATION_LIST[position])
+        mDrawer.closeDrawer()
+    }
+
+    private fun getRestroomList(sigunName: String) {
+        getRestroomList(1, 1000, sigunName)
     }
 
     private fun getRestroomList(pageIndex: Int = 1, pageSize: Int = 1000, sigunName: String = "고양시") {
