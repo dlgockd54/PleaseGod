@@ -243,7 +243,7 @@ class RestroomMapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiCl
                         val latitude: Double = restroom.refine_wgs84_lat.toDouble()
                         val longitude: Double = restroom.refine_wgs84_logt.toDouble()
                         val latLng: LatLng = LatLng(latitude, longitude)
-                        val snippet: String = restroom.refine_roadnm_addr
+                        val snippet: String? = restroom.refine_roadnm_addr
                         var marker: Marker
 
                         if (restroom.refine_roadnm_addr == mSelectedRestroomRoadNameAddress) {
@@ -298,7 +298,7 @@ class RestroomMapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiCl
     }
 
     private fun changeClickedRestroom(marker: Marker) {
-        val restroomRoadNameAddress: String = marker.snippet
+        val restroomRoadNameAddress: String? = marker.snippet
 
         for (restroom in mRestroomList) {
             if (restroom.refine_roadnm_addr == restroomRoadNameAddress) {

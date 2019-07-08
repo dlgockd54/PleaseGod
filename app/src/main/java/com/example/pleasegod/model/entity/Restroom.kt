@@ -90,7 +90,7 @@ data class Restroom(
 
     @SerializedName("REFINE_ROADNM_ADDR")
     @Expose
-    val refine_roadnm_addr: String,
+    val refine_roadnm_addr: String?,
 
     @SerializedName("REFINE_ZIP_CD")
     @Expose
