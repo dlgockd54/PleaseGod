@@ -1,6 +1,8 @@
 package com.example.pleasegod.view
 
 import android.Manifest
+import android.content.Context
+import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.graphics.Color
 import android.location.Location
@@ -67,9 +69,13 @@ class RestroomMapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiCl
         val mapFragment = (supportFragmentManager.findFragmentById(R.id.restroom_map) as SupportMapFragment).apply {
             getMapAsync(this@RestroomMapActivity)
         }
+        val sharedPreferences: SharedPreferences = getSharedPreferences("selected_location_preferences", Context.MODE_PRIVATE)
 
         init()
-        getRestroomList()
+
+        sharedPreferences.getString(RestroomListActivity.PREFERENCES_KEY, null)?.let {
+            getRestroomList(it)
+        }
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -455,6 +461,10 @@ class RestroomMapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiCl
         }
 
         restroomInformationDialog.show()
+    }
+
+    private fun getRestroomList(sigunName: String) {
+        getRestroomList(1, 1000, sigunName)
     }
 
     private fun getRestroomList(pageIndex: Int = 1, pageSize: Int = 1000, sigunName: String = "고양시") {

@@ -1,5 +1,7 @@
 package com.example.pleasegod.view
 
+import android.content.Context
+import android.content.SharedPreferences
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
@@ -26,6 +28,7 @@ import kotlinx.android.synthetic.main.bottom_sheet_search_view.view.*
 class RestroomListActivity : AppCompatActivity() /* , LocationAdapter.OnItemClickListener */ {
     companion object {
         val TAG: String = RestroomListActivity::class.java.simpleName
+        const val PREFERENCES_KEY: String = "selected_location"
         private val LOCATION_LIST: MutableList<String> = mutableListOf(
             "가평군", "고양시",
             "과천시", "광명시", "광주시", "구리시", "군포시", "김포시",
@@ -158,6 +161,12 @@ class RestroomListActivity : AppCompatActivity() /* , LocationAdapter.OnItemClic
     private fun showRestroomList(position: Int) {
         getRestroomList(LOCATION_LIST[position])
         mDrawer.closeDrawer()
+
+        val sharedPresferences = getSharedPreferences("selected_location_preferences", Context.MODE_PRIVATE)
+        val editor: SharedPreferences.Editor = sharedPresferences.edit().apply {
+            putString(PREFERENCES_KEY, LOCATION_LIST[position])
+            commit()
+        }
     }
 
     private fun getRestroomList(sigunName: String) {
