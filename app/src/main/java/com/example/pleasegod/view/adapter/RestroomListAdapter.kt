@@ -29,9 +29,8 @@ class RestroomListAdapter(private val mActivity: Activity, private val mRestroom
     private var mTotalRestroomList: MutableList<Restroom> = mutableListOf()
 
     fun copyTotalRestroom() {
+        mTotalRestroomList.clear()
         mTotalRestroomList.addAll(mRestroomList)
-
-        Log.d(TAG, "mTotalRestroomList.size: ${mTotalRestroomList.size}")
     }
 
     fun restoreTotalRestroomData() {
