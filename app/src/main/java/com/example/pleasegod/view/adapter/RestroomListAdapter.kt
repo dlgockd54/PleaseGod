@@ -71,31 +71,21 @@ class RestroomListAdapter(private val mActivity: Activity, private val mRestroom
         return object : Filter() {
             override fun performFiltering(charSequence: CharSequence?): FilterResults {
                 val query: String = charSequence.toString()
-                var filteredList: MutableList<Restroom> = mutableListOf()
-                val filterResults: FilterResults = FilterResults()
 
-                if (query.isEmpty()) {
-                    filteredList = mTotalRestroomList
-                } else {
-                    for (restroom in mTotalRestroomList) {
-                        if (restroom.pbctlt_plc_nm != null) {
-                            if (restroom.pbctlt_plc_nm.contains(query) ||
-                                (restroom.refine_roadnm_addr != null && restroom.refine_roadnm_addr.contains(query))) {
-                                filteredList.add(restroom)
-                            }
-                        } else if (restroom.refine_roadnm_addr != null) {
-                            if (restroom.pbctlt_plc_nm != null &&
-                                restroom.pbctlt_plc_nm.contains(query) || restroom.refine_roadnm_addr.contains(query)) {
-                                filteredList.add(restroom)
-                            }
+                return FilterResults().apply {
+                    if (query.isEmpty()) {
+                        count = mTotalRestroomList.size
+                        values = mTotalRestroomList
+                    } else {
+                        mTotalRestroomList.filter {
+                            (it.pbctlt_plc_nm != null && it.pbctlt_plc_nm.contains(query)) ||
+                                    (it.refine_roadnm_addr != null && it.refine_roadnm_addr.contains(query))
+                        }.let {
+                            count = it.size
+                            values = it
                         }
                     }
                 }
-
-                filterResults.count = filteredList.size
-                filterResults.values = filteredList
-
-                return filterResults
             }
 
             override fun publishResults(charSequence: CharSequence?, results: FilterResults?) {
