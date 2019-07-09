@@ -286,14 +286,10 @@ class RestroomMapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiCl
     }
 
     private fun changeClickedRestroom(marker: Marker) {
-        val restroomRoadNameAddress: String? = marker.snippet
-
-        for (restroom in mRestroomList) {
-            if (restroom.refine_roadnm_addr == restroomRoadNameAddress) {
-                mClickedRestroom = restroom
-
-                break
-            }
+        mRestroomList.find {
+            it.refine_roadnm_addr == marker.snippet
+        }?.let {
+            mClickedRestroom = it
         }
     }
 
