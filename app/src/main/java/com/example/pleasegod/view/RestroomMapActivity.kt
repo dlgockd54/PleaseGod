@@ -489,23 +489,17 @@ class RestroomMapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiCl
     private fun showUserSelectedRestroom() {
         Log.d(TAG, "${mRestroomList.size}")
 
-        for (restroom in mRestroomList) {
-            if (restroom.refine_roadnm_addr == mSelectedRestroomRoadNameAddress) {
-                if (restroom.refine_wgs84_lat == null || restroom.refine_wgs84_logt == null) {
-                    Log.d(TAG, "selected restroom location is null")
-                } else {
-                    mMap.moveCamera(
-                            CameraUpdateFactory.newLatLngZoom(
-                                    LatLng(restroom.refine_wgs84_lat.toDouble(), restroom.refine_wgs84_logt.toDouble()),
-                                    DEFAULT_ZOOM
-                            )
-                    )
+        mRestroomList.find {
+            it.refine_roadnm_addr == mSelectedRestroomRoadNameAddress && it.refine_wgs84_lat != null && it.refine_wgs84_logt != null
+        }?.let {
+            mMap.moveCamera(
+                CameraUpdateFactory.newLatLngZoom(
+                    LatLng(it.refine_wgs84_lat!!.toDouble(), it.refine_wgs84_logt!!.toDouble()),
+                    DEFAULT_ZOOM
+                )
+            )
 
-                    mPreviousClickedMarker = mMarkerMap[restroom]
-                }
-
-                break
-            }
+            mPreviousClickedMarker = mMarkerMap[it]
         }
     }
 
