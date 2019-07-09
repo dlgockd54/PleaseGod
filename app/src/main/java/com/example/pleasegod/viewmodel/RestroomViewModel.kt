@@ -37,8 +37,8 @@ class RestroomViewModel(private val mApplication: Application) : AndroidViewMode
                 pageSize,
                 sigunName
             )
-                .flatMap {
-                    Single.just(it.getPubltolt()?.get(1)?.getRow())
+                .map {
+                    it.getPubltolt()?.get(1)?.getRow()
                 }
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
