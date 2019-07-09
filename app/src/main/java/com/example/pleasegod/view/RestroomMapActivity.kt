@@ -218,35 +218,31 @@ class RestroomMapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiCl
     }
 
     private fun addMarkerForRestroomList() {
-        for (restroom in mRestroomList) {
-            if (restroom.pbctlt_plc_nm != null) {
-                if (restroom.refine_wgs84_lat != null) {
-                    if (restroom.refine_wgs84_logt != null) {
-                        val latitude: Double = restroom.refine_wgs84_lat.toDouble()
-                        val longitude: Double = restroom.refine_wgs84_logt.toDouble()
-                        val latLng: LatLng = LatLng(latitude, longitude)
-                        val snippet: String? = restroom.refine_roadnm_addr
-                        var marker: Marker
+        mRestroomList.filter {
+            it.pbctlt_plc_nm != null && it.refine_wgs84_lat != null && it.refine_wgs84_logt != null
+        }.forEach { restroom ->
+            val latitude: Double = restroom.refine_wgs84_lat!!.toDouble()
+            val longitude: Double = restroom.refine_wgs84_logt!!.toDouble()
+            val latLng: LatLng = LatLng(latitude, longitude)
+            val snippet: String? = restroom.refine_roadnm_addr
+            var marker: Marker
 
-                        if (restroom.refine_roadnm_addr == mSelectedRestroomRoadNameAddress) {
-                            marker = addMarker(
-                                    restroom.pbctlt_plc_nm,
-                                    latLng,
-                                    snippet,
-                                    BitmapDescriptorFactory.HUE_AZURE
-                            )
-                        } else {
-                            marker = addMarker(
-                                    restroom.pbctlt_plc_nm,
-                                    latLng,
-                                    snippet
-                            )
-                        }
-
-                        mMarkerMap.put(restroom, marker)
-                    }
-                }
+            if (restroom.refine_roadnm_addr == mSelectedRestroomRoadNameAddress) {
+                marker = addMarker(
+                    restroom.pbctlt_plc_nm,
+                    latLng,
+                    snippet,
+                    BitmapDescriptorFactory.HUE_AZURE
+                )
+            } else {
+                marker = addMarker(
+                    restroom.pbctlt_plc_nm,
+                    latLng,
+                    snippet
+                )
             }
+
+            mMarkerMap.put(restroom, marker)
         }
     }
 
