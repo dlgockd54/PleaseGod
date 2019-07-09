@@ -132,21 +132,9 @@ class RestroomMapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiCl
     }
 
     private fun searchRestroomByName(query: String) {
-        val searchedRestroomList: MutableList<Restroom> = mutableListOf()
-
-        for (restroom in mRestroomList) {
-            if (restroom.pbctlt_plc_nm.contains(query)) {
-                Log.d(TAG, "${restroom.pbctlt_plc_nm} contains $query")
-
-                if (restroom.refine_wgs84_lat == null || restroom.refine_wgs84_logt == null) {
-                    Log.d(TAG, "selected restroom location is null")
-                } else {
-                    searchedRestroomList.add(restroom)
-                }
-            }
-        }
-
-        showSearchedRestroomList(searchedRestroomList)
+        showSearchedRestroomList(mRestroomList.filter {
+            it.pbctlt_plc_nm.contains(query) && it.refine_wgs84_lat != null && it.refine_wgs84_logt != null
+        }.toMutableList())
     }
 
     private fun showSearchedRestroomList(restroomList: MutableList<Restroom>) {
