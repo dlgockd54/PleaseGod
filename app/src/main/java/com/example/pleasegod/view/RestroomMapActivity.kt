@@ -69,13 +69,8 @@ class RestroomMapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiCl
         val mapFragment = (supportFragmentManager.findFragmentById(R.id.restroom_map) as SupportMapFragment).apply {
             getMapAsync(this@RestroomMapActivity)
         }
-        val sharedPreferences: SharedPreferences = getSharedPreferences("selected_location_preferences", Context.MODE_PRIVATE)
 
         init()
-
-        sharedPreferences.getString(RestroomListActivity.PREFERENCES_KEY, null)?.let {
-            getRestroomList(it)
-        }
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -119,7 +114,6 @@ class RestroomMapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiCl
         intent.getStringExtra(RestroomListAdapter.INTENT_KEY)?.let {
             mSelectedRestroomRoadNameAddress = it
         }
-        Log.d(TAG, mSelectedRestroomRoadNameAddress)
         mRestroomViewModel = ViewModelProviders.of(this).get(RestroomViewModel::class.java).apply {
             mRestroomLiveData.observe(this@RestroomMapActivity, Observer {
                 mRestroomList.clear()
@@ -283,6 +277,12 @@ class RestroomMapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiCl
                                     BitmapDescriptorFactory.HUE_RED,
                                     "current_location"
                             )
+
+                            getSharedPreferences("selected_location_preferences", Context.MODE_PRIVATE).apply {
+                                getString(RestroomListActivity.PREFERENCES_KEY, null)?.let {
+                                    getRestroomList(it)
+                                }
+                            }
                         }
                     } else {
                         Log.d(TAG, "can't retrieve current location!")
@@ -508,7 +508,6 @@ class RestroomMapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiCl
 
     private fun showUserSelectedRestroom() {
         Log.d(TAG, "${mRestroomList.size}")
-        Log.d(TAG, mSelectedRestroomRoadNameAddress)
 
         for (restroom in mRestroomList) {
             if (restroom.refine_roadnm_addr == mSelectedRestroomRoadNameAddress) {
