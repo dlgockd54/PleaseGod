@@ -7,6 +7,7 @@ import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
+import android.widget.Toast
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.widget.SearchView
 import androidx.lifecycle.Observer
@@ -18,10 +19,14 @@ import com.example.pleasegod.view.adapter.RestroomListAdapter
 import com.example.pleasegod.viewmodel.RestroomViewModel
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
+import com.google.android.material.snackbar.Snackbar
 import com.mikepenz.materialdrawer.Drawer
 import com.mikepenz.materialdrawer.DrawerBuilder
 import com.mikepenz.materialdrawer.model.PrimaryDrawerItem
 import com.mikepenz.materialdrawer.model.interfaces.IDrawerItem
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.disposables.CompositeDisposable
+import io.reactivex.subjects.BehaviorSubject
 import kotlinx.android.synthetic.main.activity_restroom_list.*
 import kotlinx.android.synthetic.main.bottom_sheet_search_view.view.*
 
@@ -44,6 +49,8 @@ class RestroomListActivity : AppCompatActivity() /* , LocationAdapter.OnItemClic
     private lateinit var mBottomSheetDialog: BottomSheetDialog
     private lateinit var mDrawerToggle: ActionBarDrawerToggle
     private lateinit var mDrawer: Drawer
+    private val mBackPressSubject: BehaviorSubject<Long> = BehaviorSubject.create()
+    private val mCompositeDisposable: CompositeDisposable = CompositeDisposable()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         Log.d(TAG, "onCreate()")
@@ -57,6 +64,22 @@ class RestroomListActivity : AppCompatActivity() /* , LocationAdapter.OnItemClic
     }
 
     private fun init() {
+        mCompositeDisposable.add(
+            mBackPressSubject
+                .observeOn(AndroidSchedulers.mainThread())
+                .buffer(2, 1)
+                .map {
+                    Pair(it[0], it[1])
+                }
+                .subscribe {
+                    if (it.second - it.first < 1500) {
+                        Log.d(TAG, "${it.first}, ${it.second}")
+
+                        finish()
+                    } else {
+                        Toast.makeText(this@RestroomListActivity, getString(R.string.back_press_message), Toast.LENGTH_SHORT).show()
+                    }
+                })
         mDrawer = DrawerBuilder(this@RestroomListActivity)
             .withRootView(R.id.drawer_container)
             .withToolbar(toolbar_location)
@@ -182,9 +205,15 @@ class RestroomListActivity : AppCompatActivity() /* , LocationAdapter.OnItemClic
         if (mDrawer.isDrawerOpen) {
             mDrawer.closeDrawer()
         } else {
-            super.onBackPressed()
-
-            finish()
+            mBackPressSubject.onNext(System.currentTimeMillis())
         }
+    }
+
+    override fun onDestroy() {
+        Log.d(TAG, "onDestroy()")
+
+        super.onDestroy()
+
+        mCompositeDisposable.clear()
     }
 }

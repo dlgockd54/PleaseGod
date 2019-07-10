@@ -3,4 +3,5 @@
     <string name="api_key">1ebf732c53c84ef6bb6c19857711ab00</string>
     <string name="map_api_key">AIzaSyDH5wQDOFRREKYnkeD0lwPaAgU4pRnioBQ</string>
     <string name="current_location">현재 위치</string>
+    <string name="back_press_message">뒤로가기 버튼을 한번 더 누르면 종료</string>
 </resources>
