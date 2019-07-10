@@ -162,8 +162,8 @@ class RestroomListActivity : AppCompatActivity() /* , LocationAdapter.OnItemClic
         getRestroomList(LOCATION_LIST[position])
         mDrawer.closeDrawer()
 
-        val sharedPresferences = getSharedPreferences("selected_location_preferences", Context.MODE_PRIVATE)
-        val editor: SharedPreferences.Editor = sharedPresferences.edit().apply {
+        val sharedPreferences = getSharedPreferences("selected_location_preferences", Context.MODE_PRIVATE)
+        val editor: SharedPreferences.Editor = sharedPreferences.edit().apply {
             putString(PREFERENCES_KEY, LOCATION_LIST[position])
             commit()
         }
