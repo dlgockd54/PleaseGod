@@ -12,6 +12,7 @@ import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.widget.SearchView
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
+import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.bumptech.glide.Glide
 import com.bumptech.glide.RequestManager
@@ -88,6 +89,7 @@ class RestroomListActivity : AppCompatActivity() /* , LocationAdapter.OnItemClic
     private val mCompositeDisposable: CompositeDisposable = CompositeDisposable()
     private val mTextChangeSubject: BehaviorSubject<String> = BehaviorSubject.create()
     private lateinit var mGlideRequestManager: RequestManager
+    private lateinit var mDividerItemDecoration: DividerItemDecoration
 
     override fun onCreate(savedInstanceState: Bundle?) {
         Log.d(TAG, "onCreate()")
@@ -101,6 +103,7 @@ class RestroomListActivity : AppCompatActivity() /* , LocationAdapter.OnItemClic
     }
 
     private fun init() {
+        mDividerItemDecoration = DividerItemDecoration(applicationContext, LinearLayoutManager(this).orientation)
         mGlideRequestManager = Glide.with(this@RestroomListActivity)
         mCompositeDisposable.add(
             mTextChangeSubject
@@ -168,6 +171,7 @@ class RestroomListActivity : AppCompatActivity() /* , LocationAdapter.OnItemClic
         rv_restroom_list.apply {
             layoutManager = LinearLayoutManager(this@RestroomListActivity)
             adapter = mRestroomListAdapter
+            addItemDecoration(mDividerItemDecoration)
         }
         fab_restroom_list.apply {
             setOnClickListener {
