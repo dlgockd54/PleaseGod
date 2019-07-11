@@ -42,6 +42,38 @@ class RestroomListActivity : AppCompatActivity() /* , LocationAdapter.OnItemClic
             "안양시", "양주시", "양평군", "여주시", "연천군", "오산시", "용인시", "의왕시", "의정부시",
             "이천시", "파주시", "평택시", "포천시", "하남시", "화성시"
         )
+        private val LOCATION_ICON_LIST: Array<Int> = arrayOf(
+            R.drawable.gapyeong,
+            R.drawable.goyang,
+            R.drawable.gwacheon,
+            R.drawable.gwangmyeong,
+            R.drawable.gwangju,
+            R.drawable.guri,
+            R.drawable.gunpo,
+            R.drawable.gimpo,
+            R.drawable.namyangju,
+            R.drawable.dongducheon,
+            R.drawable.bucheon,
+            R.drawable.seongnam,
+            R.drawable.suwon,
+            R.drawable.siheung,
+            R.drawable.yeoncheon,
+            R.drawable.anseong,
+            R.drawable.anyang,
+            R.drawable.yangju,
+            R.drawable.yangpyeong,
+            R.drawable.yeoju,
+            R.drawable.yeoncheon,
+            R.drawable.osan,
+            R.drawable.yongin,
+            R.drawable.uiwang,
+            R.drawable.uijeongbu,
+            R.drawable.icheon,
+            R.drawable.paju,
+            R.drawable.pyeongtaek,
+            R.drawable.pocheon,
+            R.drawable.hanam,
+            R.drawable.hwaseong)
     }
 
     private lateinit var mRestroomViewModel: RestroomViewModel
@@ -106,8 +138,14 @@ class RestroomListActivity : AppCompatActivity() /* , LocationAdapter.OnItemClic
                 }
             })
             .apply {
-                for (location in LOCATION_LIST) {
-                    addDrawerItems(PrimaryDrawerItem().withName(location))
+                for (i in 0 until LOCATION_LIST.size) {
+                    addDrawerItems(
+                        PrimaryDrawerItem().withName(LOCATION_LIST[i]).withIcon(
+                            getDrawable(
+                                LOCATION_ICON_LIST[i]
+                            )
+                        )
+                    )
                 }
             }
             .build()
