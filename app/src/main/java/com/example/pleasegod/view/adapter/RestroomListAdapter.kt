@@ -8,8 +8,10 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Filter
 import android.widget.Filterable
+import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.RequestManager
 import com.example.pleasegod.R
 import com.example.pleasegod.model.entity.Restroom
 import com.example.pleasegod.view.RestroomMapActivity
@@ -19,8 +21,11 @@ import kotlinx.android.synthetic.main.item_restroom.view.*
  * Created by hclee on 2019-06-30.
  */
 
-class RestroomListAdapter(private val mActivity: Activity, private val mRestroomList: MutableList<Restroom>) :
-    RecyclerView.Adapter<RestroomListAdapter.RestroomViewHolder>(), Filterable {
+class RestroomListAdapter(
+    private val mActivity: Activity,
+    private val mGlideRequestManager: RequestManager,
+    private val mRestroomList: MutableList<Restroom>
+) : RecyclerView.Adapter<RestroomListAdapter.RestroomViewHolder>(), Filterable {
     companion object {
         val TAG: String = RestroomListAdapter::class.java.simpleName
         val INTENT_KEY: String = "selected_restroom"
@@ -51,6 +56,10 @@ class RestroomListAdapter(private val mActivity: Activity, private val mRestroom
 
     override fun onBindViewHolder(holder: RestroomViewHolder, position: Int) {
         mRestroomList[position].let { restroom ->
+            mGlideRequestManager
+                .load(R.drawable.pray)
+//                .circleCrop()
+                .into(holder.mPrayImageView)
             holder.mRestroomNameTextView.text = restroom.pbctlt_plc_nm
             holder.mRoadNameAddressTextView.text = restroom.refine_roadnm_addr
             holder.mRegularTimeTextView.text = restroom.open_tm_info
@@ -100,6 +109,7 @@ class RestroomListAdapter(private val mActivity: Activity, private val mRestroom
     }
 
     class RestroomViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+        val mPrayImageView: ImageView = itemView.iv_pray
         val mRestroomNameTextView: TextView = itemView.tv_restroom_name
         val mRoadNameAddressTextView: TextView = itemView.tv_road_name_address
         val mRegularTimeTextView: TextView = itemView.tv_regular_time

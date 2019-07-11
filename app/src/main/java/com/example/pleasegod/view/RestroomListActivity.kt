@@ -13,6 +13,8 @@ import androidx.appcompat.widget.SearchView
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.bumptech.glide.Glide
+import com.bumptech.glide.RequestManager
 import com.example.pleasegod.R
 import com.example.pleasegod.model.entity.Restroom
 import com.example.pleasegod.view.adapter.RestroomListAdapter
@@ -85,6 +87,7 @@ class RestroomListActivity : AppCompatActivity() /* , LocationAdapter.OnItemClic
     private val mBackPressSubject: BehaviorSubject<Long> = BehaviorSubject.create()
     private val mCompositeDisposable: CompositeDisposable = CompositeDisposable()
     private val mTextChangeSubject: BehaviorSubject<String> = BehaviorSubject.create()
+    private lateinit var mGlideRequestManager: RequestManager
 
     override fun onCreate(savedInstanceState: Bundle?) {
         Log.d(TAG, "onCreate()")
@@ -98,6 +101,7 @@ class RestroomListActivity : AppCompatActivity() /* , LocationAdapter.OnItemClic
     }
 
     private fun init() {
+        mGlideRequestManager = Glide.with(this@RestroomListActivity)
         mCompositeDisposable.add(
             mTextChangeSubject
                 .debounce(500, TimeUnit.MILLISECONDS)
@@ -149,7 +153,7 @@ class RestroomListActivity : AppCompatActivity() /* , LocationAdapter.OnItemClic
                 }
             }
             .build()
-        mRestroomListAdapter = RestroomListAdapter(this, mRestroomList)
+        mRestroomListAdapter = RestroomListAdapter(this, mGlideRequestManager, mRestroomList)
         mRestroomViewModel = ViewModelProviders.of(this).get(RestroomViewModel::class.java).apply {
             mRestroomLiveData.observe(this@RestroomListActivity, Observer {
                 Log.d(TAG, "mRestroomLiveData changed()")
