@@ -19,16 +19,17 @@ import com.example.pleasegod.view.adapter.RestroomListAdapter
 import com.example.pleasegod.viewmodel.RestroomViewModel
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
-import com.google.android.material.snackbar.Snackbar
 import com.mikepenz.materialdrawer.Drawer
 import com.mikepenz.materialdrawer.DrawerBuilder
 import com.mikepenz.materialdrawer.model.PrimaryDrawerItem
 import com.mikepenz.materialdrawer.model.interfaces.IDrawerItem
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
+import io.reactivex.schedulers.Schedulers
 import io.reactivex.subjects.BehaviorSubject
 import kotlinx.android.synthetic.main.activity_restroom_list.*
 import kotlinx.android.synthetic.main.bottom_sheet_search_view.view.*
+import java.util.concurrent.TimeUnit
 
 class RestroomListActivity : AppCompatActivity() /* , LocationAdapter.OnItemClickListener */ {
     companion object {
@@ -51,6 +52,7 @@ class RestroomListActivity : AppCompatActivity() /* , LocationAdapter.OnItemClic
     private lateinit var mDrawer: Drawer
     private val mBackPressSubject: BehaviorSubject<Long> = BehaviorSubject.create()
     private val mCompositeDisposable: CompositeDisposable = CompositeDisposable()
+    private val mTextChangeSubject: BehaviorSubject<String> = BehaviorSubject.create()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         Log.d(TAG, "onCreate()")
@@ -64,6 +66,14 @@ class RestroomListActivity : AppCompatActivity() /* , LocationAdapter.OnItemClic
     }
 
     private fun init() {
+        mCompositeDisposable.add(
+            mTextChangeSubject
+                .debounce(500, TimeUnit.MILLISECONDS)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe {
+                    mRestroomListAdapter.filter.filter(it)
+                })
         mCompositeDisposable.add(
             mBackPressSubject
                 .observeOn(AndroidSchedulers.mainThread())
@@ -130,10 +140,6 @@ class RestroomListActivity : AppCompatActivity() /* , LocationAdapter.OnItemClic
                                     override fun onQueryTextSubmit(query: String?): Boolean {
                                         Log.d(TAG, query)
 
-                                        query?.let {
-                                            mRestroomListAdapter.filter.filter(query)
-                                        }
-
                                         isQuerySubmitted = true
                                         mBottomSheetDialog.dismiss()
 
@@ -142,7 +148,7 @@ class RestroomListActivity : AppCompatActivity() /* , LocationAdapter.OnItemClic
 
                                     override fun onQueryTextChange(newText: String?): Boolean {
                                         newText?.let {
-                                            mRestroomListAdapter.filter.filter(newText)
+                                            mTextChangeSubject.onNext(newText)
                                         }
 
                                         return false
