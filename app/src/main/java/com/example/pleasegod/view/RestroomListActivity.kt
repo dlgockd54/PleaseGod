@@ -188,7 +188,7 @@ class RestroomListActivity : AppCompatActivity() /* , LocationAdapter.OnItemClic
         val sharedPreferences = getSharedPreferences("selected_location_preferences", Context.MODE_PRIVATE)
         val editor: SharedPreferences.Editor = sharedPreferences.edit().apply {
             putString(PREFERENCES_KEY, LOCATION_LIST[position])
-            commit()
+            apply() // apply() commits changes asynchronously and we don't have to store selected location synchronously
         }
     }
 
