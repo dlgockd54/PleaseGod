@@ -85,7 +85,7 @@ class RestroomListActivity : AppCompatActivity() /* , LocationAdapter.OnItemClic
     private lateinit var mBottomSheetDialog: BottomSheetDialog
     private lateinit var mDrawerToggle: ActionBarDrawerToggle
     private lateinit var mDrawer: Drawer
-    private val mBackPressSubject: BehaviorSubject<Long> = BehaviorSubject.create()
+    private val mBackPressSubject: BehaviorSubject<Long> = BehaviorSubject.createDefault(System.currentTimeMillis())
     private val mCompositeDisposable: CompositeDisposable = CompositeDisposable()
     private val mTextChangeSubject: BehaviorSubject<String> = BehaviorSubject.create()
     private lateinit var mGlideRequestManager: RequestManager
