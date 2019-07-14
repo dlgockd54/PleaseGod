@@ -2,7 +2,6 @@ package com.example.pleasegod.view
 
 import android.Manifest
 import android.content.Context
-import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.graphics.Color
 import android.location.Location
@@ -448,7 +447,7 @@ class RestroomMapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiCl
     }
 
     private fun getRestroomList(pageIndex: Int = 1, pageSize: Int = 1000, sigunName: String = "고양시") {
-        mRestroomViewModel.getRestroomList(pageIndex, pageSize, sigunName)
+        mRestroomViewModel.getRestroomList(getString(R.string.api_key), pageIndex, pageSize, sigunName)
     }
 
     override fun onConnected(connectionHint: Bundle?) {

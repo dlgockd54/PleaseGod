@@ -250,7 +250,7 @@ class RestroomListActivity : AppCompatActivity() /* , LocationAdapter.OnItemClic
 
     private fun getRestroomList(pageIndex: Int = 1, pageSize: Int = 1000, sigunName: String = "고양시") {
         loading_progress_bar.visibility = View.VISIBLE
-        mRestroomViewModel.getRestroomList(pageIndex, pageSize, sigunName)
+        mRestroomViewModel.getRestroomList(getString(R.string.api_key), pageIndex, pageSize, sigunName)
     }
 
     override fun onBackPressed() {
