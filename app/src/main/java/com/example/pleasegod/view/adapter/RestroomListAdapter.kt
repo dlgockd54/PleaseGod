@@ -39,6 +39,11 @@ class RestroomListAdapter(
     private var mTotalRestroomList: MutableList<Restroom> = mutableListOf()
     private val mCompositeDisposable: CompositeDisposable = CompositeDisposable()
     private var mItemClickSubject: PublishSubject<Intent> = PublishSubject.create()
+    private lateinit var mItemClickObserver: PublishSubject<Intent>
+
+    init {
+        subscribeSubject()
+    }
 
     fun copyTotalRestroom() {
         mTotalRestroomList.clear()
@@ -61,32 +66,27 @@ class RestroomListAdapter(
 
     override fun getItemCount(): Int = mRestroomList.size
 
-    fun initSubject() {
-        mItemClickSubject = PublishSubject.create()
-
-        subscribeSubject()
-    }
-
+    /**
+     * take() operator finishes observer by invoking onComplete() of observer
+     * So every time item click event ends, take() operator finishes the observer.
+     * That's why this function exists. To reallocate mItemClickObserver then resubscribe it to mItemClickSubject.
+     */
     private fun subscribeSubject() {
-        Log.d(TAG, "observeSubject()")
-
-        mCompositeDisposable.add(
-            mItemClickSubject
-                .subscribeOn(Schedulers.io())
-                .take(1)
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribeWith(object : DefaultObserver<Intent>() {
-                    override fun onNext(t: Intent) {
-                        Log.d(TAG, "onNext()")
-
-                        mActivity.startActivity(t)
-                        mActivity.overridePendingTransition(
-                            R.anim.animation_slide_from_right,
-                            R.anim.animation_slide_to_left
-                        )
-                    }
-                })
-        )
+        mItemClickObserver = PublishSubject.create()
+        mItemClickObserver.subscribe(object : DefaultObserver<Intent>() {
+            override fun onNext(t: Intent) {
+                mActivity.startActivity(t)
+                mActivity.overridePendingTransition(
+                    R.anim.animation_slide_from_right,
+                    R.anim.animation_slide_to_left
+                )
+            }
+        })
+        mItemClickSubject
+            .subscribeOn(Schedulers.io())
+            .take(1)
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe(mItemClickObserver)
     }
 
     override fun onBindViewHolder(holder: RestroomViewHolder, position: Int) {
@@ -105,6 +105,8 @@ class RestroomListAdapter(
                 }
 
                 mItemClickSubject.onNext(intent)
+
+                subscribeSubject()
             }
         }
     }

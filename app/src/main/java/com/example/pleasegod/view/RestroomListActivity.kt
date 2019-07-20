@@ -272,12 +272,6 @@ class RestroomListActivity : AppCompatActivity() /* , LocationAdapter.OnItemClic
         }
     }
 
-    override fun onResume() {
-        super.onResume()
-
-        mRestroomListAdapter.initSubject()
-    }
-
     override fun onDestroy() {
         Log.d(TAG, "onDestroy()")
 
