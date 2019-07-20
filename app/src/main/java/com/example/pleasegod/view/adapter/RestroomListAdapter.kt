@@ -73,15 +73,17 @@ class RestroomListAdapter(
      */
     private fun subscribeSubject() {
         mItemClickObserver = PublishSubject.create()
-        mItemClickObserver.subscribe(object : DefaultObserver<Intent>() {
-            override fun onNext(t: Intent) {
-                mActivity.startActivity(t)
-                mActivity.overridePendingTransition(
-                    R.anim.animation_slide_from_right,
-                    R.anim.animation_slide_to_left
-                )
-            }
-        })
+        mCompositeDisposable.add(
+            mItemClickObserver.subscribeWith(object : DefaultObserver<Intent>() {
+                override fun onNext(t: Intent) {
+                    mActivity.startActivity(t)
+                    mActivity.overridePendingTransition(
+                        R.anim.animation_slide_from_right,
+                        R.anim.animation_slide_to_left
+                    )
+                }
+            })
+        )
         mItemClickSubject
             .subscribeOn(Schedulers.io())
             .take(1)
