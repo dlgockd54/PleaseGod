@@ -18,6 +18,8 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.RequestManager
 import com.example.pleasegod.R
 import com.example.pleasegod.model.entity.Restroom
+import com.example.pleasegod.observer.DefaultObserver
+import com.example.pleasegod.observer.DefaultSingleObserver
 import com.example.pleasegod.view.adapter.RestroomListAdapter
 import com.example.pleasegod.viewmodel.RestroomViewModel
 import com.google.android.material.bottomsheet.BottomSheetBehavior
@@ -110,9 +112,12 @@ class RestroomListActivity : AppCompatActivity() /* , LocationAdapter.OnItemClic
                 .debounce(500, TimeUnit.MILLISECONDS)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe {
-                    mRestroomListAdapter.filter.filter(it)
+                .subscribeWith(object : DefaultObserver<String>() {
+                    override fun onNext(text: String) {
+                        mRestroomListAdapter.filter.filter(text)
+                    }
                 })
+        )
         mCompositeDisposable.add(
             mBackPressSubject
                 .observeOn(AndroidSchedulers.mainThread())
@@ -120,15 +125,21 @@ class RestroomListActivity : AppCompatActivity() /* , LocationAdapter.OnItemClic
                 .map {
                     Pair(it[0], it[1])
                 }
-                .subscribe {
-                    if (it.second - it.first < 1500) {
-                        Log.d(TAG, "${it.first}, ${it.second}")
+                .subscribeWith(object : DefaultObserver<Pair<Long, Long>>() {
+                    override fun onNext(t: Pair<Long, Long>) {
+                        if (t.second - t.first < 1500) {
+                            Log.d(TAG, "${t.first}, ${t.second}")
 
-                        finish()
-                    } else {
-                        Toast.makeText(this@RestroomListActivity, getString(R.string.back_press_message), Toast.LENGTH_SHORT).show()
+                            finish()
+                        } else {
+                            Toast.makeText(
+                                this@RestroomListActivity,
+                                getString(R.string.back_press_message),
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }
                     }
-                })
+                }))
         mDrawer = DrawerBuilder(this@RestroomListActivity)
             .withRootView(R.id.drawer_container)
             .withToolbar(toolbar_location)

@@ -14,18 +14,13 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.RequestManager
 import com.example.pleasegod.R
 import com.example.pleasegod.model.entity.Restroom
+import com.example.pleasegod.observer.DefaultObserver
 import com.example.pleasegod.view.RestroomMapActivity
-import io.reactivex.Observer
-import io.reactivex.SingleObserver
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
-import io.reactivex.disposables.Disposable
-import io.reactivex.observers.DisposableSingleObserver
 import io.reactivex.schedulers.Schedulers
-import io.reactivex.subjects.BehaviorSubject
 import io.reactivex.subjects.PublishSubject
 import kotlinx.android.synthetic.main.item_restroom.view.*
-import java.util.concurrent.TimeUnit
 
 /**
  * Created by hclee on 2019-06-30.
@@ -80,18 +75,16 @@ class RestroomListAdapter(
                 .subscribeOn(Schedulers.io())
                 .take(1)
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe({
-                    Log.d(TAG, "onNext()")
+                .subscribeWith(object : DefaultObserver<Intent>() {
+                    override fun onNext(t: Intent) {
+                        Log.d(TAG, "onNext()")
 
-                    mActivity.startActivity(it)
-                    mActivity.overridePendingTransition(
-                        R.anim.animation_slide_from_right,
-                        R.anim.animation_slide_to_left
-                    )
-                }, {
-                    Log.d(TAG, it.message)
-                }, {
-                    Log.d(TAG, "onComplete()")
+                        mActivity.startActivity(t)
+                        mActivity.overridePendingTransition(
+                            R.anim.animation_slide_from_right,
+                            R.anim.animation_slide_to_left
+                        )
+                    }
                 })
         )
     }
