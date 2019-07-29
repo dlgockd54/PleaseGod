@@ -2,7 +2,6 @@ package com.example.pleasegod.view.adapter
 
 import android.app.Activity
 import android.content.Intent
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -16,11 +15,11 @@ import com.example.pleasegod.R
 import com.example.pleasegod.model.entity.Restroom
 import com.example.pleasegod.observer.DefaultObserver
 import com.example.pleasegod.view.RestroomMapActivity
+import com.jakewharton.rxbinding3.view.clicks
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
-import io.reactivex.schedulers.Schedulers
-import io.reactivex.subjects.PublishSubject
 import kotlinx.android.synthetic.main.item_restroom.view.*
+import java.util.concurrent.TimeUnit
 
 /**
  * Created by hclee on 2019-06-30.
@@ -38,12 +37,6 @@ class RestroomListAdapter(
 
     private var mTotalRestroomList: MutableList<Restroom> = mutableListOf()
     private val mCompositeDisposable: CompositeDisposable = CompositeDisposable()
-    private var mItemClickSubject: PublishSubject<Intent> = PublishSubject.create()
-    private lateinit var mItemClickObserver: PublishSubject<Intent>
-
-    init {
-        subscribeSubject()
-    }
 
     fun copyTotalRestroom() {
         mTotalRestroomList.clear()
@@ -66,31 +59,6 @@ class RestroomListAdapter(
 
     override fun getItemCount(): Int = mRestroomList.size
 
-    /**
-     * take() operator finishes observer by invoking onComplete() of observer
-     * So every time item click event ends, take() operator finishes the observer.
-     * That's why this function exists. To reallocate mItemClickObserver then resubscribe it to mItemClickSubject.
-     */
-    private fun subscribeSubject() {
-        mItemClickObserver = PublishSubject.create()
-        mCompositeDisposable.add(
-            mItemClickObserver.subscribeWith(object : DefaultObserver<Intent>() {
-                override fun onNext(t: Intent) {
-                    mActivity.startActivity(t)
-                    mActivity.overridePendingTransition(
-                        R.anim.animation_slide_from_right,
-                        R.anim.animation_slide_to_left
-                    )
-                }
-            })
-        )
-        mItemClickSubject
-            .subscribeOn(Schedulers.io())
-            .take(1)
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe(mItemClickObserver)
-    }
-
     override fun onBindViewHolder(holder: RestroomViewHolder, position: Int) {
         mRestroomList[position].let { restroom ->
             mGlideRequestManager
@@ -99,17 +67,25 @@ class RestroomListAdapter(
             holder.mRestroomNameTextView.text = restroom.pbctlt_plc_nm
             holder.mRoadNameAddressTextView.text = restroom.refine_roadnm_addr
             holder.mRegularTimeTextView.text = restroom.open_tm_info
-            holder.itemView.setOnClickListener {
-                Log.d(TAG, "onClick()")
 
-                val intent: Intent = Intent(mActivity, RestroomMapActivity::class.java).apply {
-                    putExtra(INTENT_KEY, restroom.refine_roadnm_addr)
-                }
+            mCompositeDisposable.add(
+                holder.itemView.clicks()
+                    .debounce(200, TimeUnit.MILLISECONDS)
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribeWith(object : DefaultObserver<Unit>() {
+                        override fun onNext(t: Unit) {
+                            val intent: Intent = Intent(mActivity, RestroomMapActivity::class.java).apply {
+                                putExtra(INTENT_KEY, restroom.refine_roadnm_addr)
+                            }
 
-                mItemClickSubject.onNext(intent)
-
-                subscribeSubject()
-            }
+                            mActivity.startActivity(intent)
+                            mActivity.overridePendingTransition(
+                                R.anim.animation_slide_from_right,
+                                R.anim.animation_slide_to_left
+                            )
+                        }
+                    })
+            )
         }
     }
 
