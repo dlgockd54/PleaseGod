@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout
+<androidx.constraintlayout.widget.ConstraintLayout
         xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="match_parent"
         android:layout_height="80dp">
 
@@ -8,35 +10,39 @@
             android:id="@+id/iv_pray"
             android:layout_width="30dp"
             android:layout_height="30dp"
+            android:layout_marginStart="25dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"/>
+
+    <TextView
+            android:id="@+id/tv_restroom_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:layout_marginStart="30dp"
-            android:layout_centerVertical="true"/>
+            app:layout_constraintStart_toEndOf="@+id/iv_pray"
+            app:layout_constraintBottom_toTopOf="@+id/tv_road_name_address"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:text="화장실"/>
 
-    <LinearLayout
-            android:id="@+id/restroom_name_layout"
-            android:layout_width="250dp"
-            android:layout_height="match_parent"
-            android:layout_toEndOf="@+id/iv_pray"
-            android:orientation="vertical"
-            android:gravity="center_vertical">
-
-        <TextView
-                android:id="@+id/tv_restroom_name"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="30dp"/>
-
-        <TextView
-                android:id="@+id/tv_road_name_address"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="30dp"/>
-    </LinearLayout>
+    <TextView
+            android:id="@+id/tv_road_name_address"
+            android:layout_width="200dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="30dp"
+            app:layout_constraintStart_toEndOf="@+id/iv_pray"
+            app:layout_constraintTop_toBottomOf="@+id/tv_restroom_name"
+            app:layout_constraintBottom_toBottomOf="parent"
+            tools:text="시 구 동 번길"/>
 
     <TextView
             android:id="@+id/tv_regular_time"
-            android:layout_width="match_parent"
+            android:layout_width="100dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="30dp"
-            android:layout_toEndOf="@+id/restroom_name_layout"
-            android:layout_centerVertical="true"/>
-</RelativeLayout>
+            android:gravity="center"
+            app:layout_constraintStart_toEndOf="@+id/tv_road_name_address"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            tools:text="개방 시간"/>
+</androidx.constraintlayout.widget.ConstraintLayout>
