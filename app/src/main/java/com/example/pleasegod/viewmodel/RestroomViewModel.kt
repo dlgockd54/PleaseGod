@@ -1,14 +1,15 @@
 package com.example.pleasegod.viewmodel
 
-import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import com.example.pleasegod.di.DaggerAppComponent
 import com.example.pleasegod.model.entity.Restroom
 import com.example.pleasegod.model.repository.RestroomRepository
 import com.example.pleasegod.observer.DefaultSingleObserver
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.schedulers.Schedulers
+import javax.inject.Inject
 
 /**
  * Created by hclee on 2019-06-30.
@@ -21,11 +22,15 @@ class RestroomViewModel : ViewModel() {
 
     val mRestroomLiveData: MutableLiveData<List<Restroom>> = MutableLiveData<List<Restroom>>()
     private val mCompositeDisposable: CompositeDisposable = CompositeDisposable()
-    private val mRepository: RestroomRepository = RestroomRepository()
+
+    @Inject
+    lateinit var mRepository: RestroomRepository
+
+    init {
+        DaggerAppComponent.create().inject(this@RestroomViewModel)
+    }
 
     fun getRestroomList(apiKey: String, pageIndex: Int, pageSize: Int, sigunName: String) {
-        Log.d(TAG, "getRestroomList()")
-
         mCompositeDisposable.add(
             mRepository.getRestroomList(
                 apiKey,
@@ -39,11 +44,8 @@ class RestroomViewModel : ViewModel() {
                 }
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribeWith(object: DefaultSingleObserver<List<Restroom>>() {
+                .subscribeWith(object : DefaultSingleObserver<List<Restroom>>() {
                     override fun onSuccess(restroomList: List<Restroom>) {
-                        Log.d(TAG, "onSuccess()")
-                        Log.d(TAG, "restroomList size: ${restroomList?.size}")
-
                         restroomList.let {
                             mRestroomLiveData.postValue(it)
                         }
@@ -57,8 +59,6 @@ class RestroomViewModel : ViewModel() {
     }
 
     override fun onCleared() {
-        Log.d(TAG, "onCleared()")
-
         super.onCleared()
         clearDisposable()
     }
