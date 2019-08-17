@@ -81,17 +81,36 @@ class RestroomListActivity : AppCompatActivity() /* , LocationAdapter.OnItemClic
             R.drawable.hwaseong)
     }
 
-    private lateinit var mRestroomViewModel: RestroomViewModel
-    private lateinit var mRestroomListAdapter: RestroomListAdapter
+    private val mRestroomViewModel: RestroomViewModel by lazy {
+        ViewModelProviders.of(this@RestroomListActivity).get(RestroomViewModel::class.java).apply {
+            mRestroomLiveData.observe(this@RestroomListActivity, Observer {
+                Log.d(TAG, "mRestroomLiveData changed()")
+
+                mRestroomList.clear()
+                mRestroomList.addAll(it)
+                mRestroomListAdapter.copyTotalRestroom()
+                mRestroomListAdapter.notifyDataSetChanged()
+                loading_progress_bar.visibility = View.GONE
+            })
+        }
+    }
+    private val mRestroomListAdapter: RestroomListAdapter by lazy {
+        RestroomListAdapter(this, mGlideRequestManager, mRestroomList)
+    }
     private val mRestroomList: MutableList<Restroom> = mutableListOf()
     private lateinit var mBottomSheetDialog: BottomSheetDialog
-    private lateinit var mDrawerToggle: ActionBarDrawerToggle
-    private lateinit var mDrawer: Drawer
+    private val mDrawer: Drawer by lazy {
+        initDrawer()
+    }
     private val mBackPressSubject: BehaviorSubject<Long> = BehaviorSubject.createDefault(System.currentTimeMillis())
     private val mCompositeDisposable: CompositeDisposable = CompositeDisposable()
     private val mTextChangeSubject: BehaviorSubject<String> = BehaviorSubject.create()
-    private lateinit var mGlideRequestManager: RequestManager
-    private lateinit var mDividerItemDecoration: DividerItemDecoration
+    private val mGlideRequestManager: RequestManager by lazy {
+        Glide.with(this@RestroomListActivity)
+    }
+    private val mDividerItemDecoration: DividerItemDecoration by lazy {
+        DividerItemDecoration(applicationContext, LinearLayoutManager(this@RestroomListActivity).orientation)
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         Log.d(TAG, "onCreate()")
@@ -105,8 +124,6 @@ class RestroomListActivity : AppCompatActivity() /* , LocationAdapter.OnItemClic
     }
 
     private fun init() {
-        mDividerItemDecoration = DividerItemDecoration(applicationContext, LinearLayoutManager(this).orientation)
-        mGlideRequestManager = Glide.with(this@RestroomListActivity)
         mCompositeDisposable.add(
             mTextChangeSubject
                 .debounce(500, TimeUnit.MILLISECONDS)
@@ -140,45 +157,6 @@ class RestroomListActivity : AppCompatActivity() /* , LocationAdapter.OnItemClic
                         }
                     }
                 }))
-        mDrawer = DrawerBuilder(this@RestroomListActivity)
-            .withRootView(R.id.drawer_container)
-            .withToolbar(toolbar_location)
-            .withDisplayBelowStatusBar(false)
-            .withActionBarDrawerToggle(true)
-            .withActionBarDrawerToggleAnimated(true)
-            .withOnDrawerItemClickListener(object : Drawer.OnDrawerItemClickListener {
-                override fun onItemClick(view: View?, position: Int, drawerItem: IDrawerItem<*>): Boolean {
-                    Log.d(TAG, "onItemClick() $position")
-
-                    showRestroomList(position)
-
-                    return true
-                }
-            })
-            .apply {
-                for (i in 0 until LOCATION_LIST.size) {
-                    addDrawerItems(
-                        PrimaryDrawerItem().withName(LOCATION_LIST[i]).withIcon(
-                            getDrawable(
-                                LOCATION_ICON_LIST[i]
-                            )
-                        )
-                    )
-                }
-            }
-            .build()
-        mRestroomListAdapter = RestroomListAdapter(this, mGlideRequestManager, mRestroomList)
-        mRestroomViewModel = ViewModelProviders.of(this).get(RestroomViewModel::class.java).apply {
-            mRestroomLiveData.observe(this@RestroomListActivity, Observer {
-                Log.d(TAG, "mRestroomLiveData changed()")
-
-                mRestroomList.clear()
-                mRestroomList.addAll(it)
-                mRestroomListAdapter.copyTotalRestroom()
-                mRestroomListAdapter.notifyDataSetChanged()
-                loading_progress_bar.visibility = View.GONE
-            })
-        }
         rv_restroom_list.apply {
             layoutManager = LinearLayoutManager(this@RestroomListActivity)
             adapter = mRestroomListAdapter
@@ -243,6 +221,36 @@ class RestroomListActivity : AppCompatActivity() /* , LocationAdapter.OnItemClic
             }
         }
     }
+
+    private fun initDrawer(): Drawer =
+        DrawerBuilder(this@RestroomListActivity)
+            .withRootView(R.id.drawer_container)
+            .withToolbar(toolbar_location)
+            .withDisplayBelowStatusBar(false)
+            .withActionBarDrawerToggle(true)
+            .withActionBarDrawerToggleAnimated(true)
+            .withOnDrawerItemClickListener(
+                object : Drawer.OnDrawerItemClickListener {
+                    override fun onItemClick(view: View?, position: Int, drawerItem: IDrawerItem<*>): Boolean {
+                        Log.d(TAG, "onItemClick() $position")
+
+                        showRestroomList(position)
+
+                        return true
+                    }
+                })
+            .apply {
+                for (i in 0 until LOCATION_LIST.size) {
+                    addDrawerItems(
+                        PrimaryDrawerItem().withName(LOCATION_LIST[i]).withIcon(
+                            getDrawable(
+                                LOCATION_ICON_LIST[i]
+                            )
+                        )
+                    )
+                }
+            }
+            .build()
 
     private fun showRestroomList(position: Int) {
         getRestroomList(LOCATION_LIST[position])
