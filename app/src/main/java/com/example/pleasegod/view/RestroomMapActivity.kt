@@ -12,10 +12,12 @@ import android.view.LayoutInflater
 import android.view.Menu
 import android.view.View
 import androidx.appcompat.widget.Toolbar
+import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.pleasegod.R
+import com.example.pleasegod.databinding.ItemRestroomInformationBinding
 import com.example.pleasegod.model.entity.Restroom
 import com.example.pleasegod.observer.DefaultSingleObserver
 import com.example.pleasegod.view.adapter.RestroomListAdapter
@@ -38,7 +40,6 @@ import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.activity_restroom_map.*
 import kotlinx.android.synthetic.main.bottom_sheet_searched_restroom.view.rv_searched_restroom_list
-import kotlinx.android.synthetic.main.item_restroom_information.view.*
 
 class RestroomMapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks,
     GoogleApiClient.OnConnectionFailedListener, GoogleMap.OnMarkerClickListener {
@@ -334,69 +335,38 @@ class RestroomMapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiCl
         }
     }
 
+    fun getRestroomDistance(): CharSequence {
+        if (mClickedRestroom.refine_wgs84_lat != null && mClickedRestroom.refine_wgs84_logt != null) {
+            val distanceArr: FloatArray = FloatArray(1)
+
+            Location.distanceBetween(
+                mCurrentLatLng.latitude,
+                mCurrentLatLng.longitude,
+                mClickedRestroom.refine_wgs84_lat!!.toDouble(),
+                mClickedRestroom.refine_wgs84_logt!!.toDouble(),
+                distanceArr
+            )
+
+            return "${distanceArr[0]}"
+        }
+
+        return ""
+    }
+
     private fun showRestroomInformationDialog() {
-        val restroomInformationView: View =
-            LayoutInflater.from(this@RestroomMapActivity).inflate(R.layout.item_restroom_information, null).apply {
-                tv_restroom_info_name.text = mClickedRestroom.pbctlt_plc_nm
-                tv_restroom_info_open_time.text = "개방 시간: ${mClickedRestroom.open_tm_info}"
-                tv_restroom_info_road_name_address.text = mClickedRestroom.refine_roadnm_addr
-
-                if (mClickedRestroom.refine_wgs84_lat != null && mClickedRestroom.refine_wgs84_logt != null) {
-                    val distanceArr: FloatArray = FloatArray(1)
-
-                    Location.distanceBetween(
-                        mCurrentLatLng.latitude,
-                        mCurrentLatLng.longitude,
-                        mClickedRestroom.refine_wgs84_lat!!.toDouble(),
-                        mClickedRestroom.refine_wgs84_logt!!.toDouble(),
-                        distanceArr
-                    )
-
-                    tv_restroom_info_distance.text = "현재 위치로부터의 직선거리: ${distanceArr[0]}m"
-                } else {
-                    tv_restroom_info_distance.visibility = View.GONE
-                }
-
-                if (mClickedRestroom.male_female_toilet_yn == null) {
-                    tv_restroom_info_male_female_toilet.visibility = View.GONE
-                } else {
-                    tv_restroom_info_male_female_toilet.text = "남녀 공용화장실 여부: ${mClickedRestroom.male_female_toilet_yn}"
-                }
-
-                if (mClickedRestroom.manage_inst_nm == null) {
-                    tv_restroom_info_manage_inst_name.visibility = View.GONE
-                } else {
-                    tv_restroom_info_manage_inst_name.text = "관리기관: ${mClickedRestroom.manage_inst_nm}"
-                }
-
-                if (mClickedRestroom.manage_inst_telno == null) {
-                    tv_restroom_info_manage_inst_tel_number.visibility = View.GONE
-                } else {
-                    tv_restroom_info_manage_inst_tel_number.text = "전화번호: ${mClickedRestroom.manage_inst_telno}"
-                }
-
-                if (mClickedRestroom.male_dspsn_wtrcls_cnt == null) {
-                    tv_restroom_info_male_dspsn_wtrcls_cnt.visibility = View.GONE
-                } else {
-                    tv_restroom_info_male_dspsn_wtrcls_cnt.text =
-                        "남성용-장애인용 대변기 수: ${mClickedRestroom.male_dspsn_wtrcls_cnt}"
-                }
-
-                if (mClickedRestroom.male_dspsn_uil_cnt == null) {
-                    tv_restroom_info_male_dspsn_uil_cnt.visibility = View.GONE
-                } else {
-                    tv_restroom_info_male_dspsn_uil_cnt.text = "남성용-장애인용 소변기 수: ${mClickedRestroom.male_dspsn_uil_cnt}"
-                }
-
-                if (mClickedRestroom.female_dspsn_wtrcls_cnt == null) {
-                    tv_restroom_info_female_dspsn_wtrcls_cnt.visibility = View.GONE
-                } else {
-                    tv_restroom_info_female_dspsn_wtrcls_cnt.text =
-                        "여성용-장애인용 대변기 수: ${mClickedRestroom.female_dspsn_wtrcls_cnt}"
-                }
-            }
+        val restroomInformationView: View = LayoutInflater.from(this@RestroomMapActivity).inflate(
+            R.layout.item_restroom_information, null
+        )
+        val binding: ItemRestroomInformationBinding? = DataBindingUtil.bind<ItemRestroomInformationBinding>(
+            restroomInformationView
+        )
         val restroomInformationDialog: BottomSheetDialog = BottomSheetDialog(this@RestroomMapActivity).apply {
             setContentView(restroomInformationView)
+        }
+
+        binding?.let {
+            it.activity = this@RestroomMapActivity
+            it.restroom = mClickedRestroom
         }
 
         restroomInformationDialog.show()

@@ -4,4 +4,11 @@
     <string name="map_api_key">AIzaSyDH5wQDOFRREKYnkeD0lwPaAgU4pRnioBQ</string>
     <string name="current_location">현재 위치</string>
     <string name="back_press_message">뒤로가기 버튼을 한번 더 누르면 종료</string>
+    <string name="restroom_distance">현재 위치로부터의 직선거리: %1$sm</string>
+    <string name="male_female_toilet_yn">남녀 공용화장실 여부: %1$s</string>
+    <string name="manage_inst_nm">관리기관: %1$s</string>
+    <string name="manage_inst_telno">전화번호: %1$s</string>
+    <string name="male_dspsn_wtrcls_cnt">남성용-장애인용 대변기 수: %1$s</string>
+    <string name="male_dspsn_uil_cnt">남성용-장애인용 소변기 수: %1$s</string>
+    <string name="female_dspsn_wtrcls_cnt">여성용-장애인용 대변기 수: %1$s</string>
 </resources>

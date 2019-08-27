@@ -1,79 +1,103 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-        xmlns:android="http://schemas.android.com/apk/res/android"
-        android:id="@+id/restroom_information"
-        android:orientation="vertical"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+<layout xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <TextView
-            android:id="@+id/tv_restroom_info_name"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textSize="30sp"
-            android:textStyle="bold"/>
+    <data>
+        <import type="android.view.View"/>
+        <import type="com.example.pleasegod.model.entity.Restroom"/>
 
-    <TextView
-            android:id="@+id/tv_restroom_info_road_name_address"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textSize="18sp"
-            android:layout_marginTop="10dp"/>
+        <variable name="activity" type="com.example.pleasegod.view.RestroomMapActivity"/>
+        <variable name="restroom" type="com.example.pleasegod.model.entity.Restroom"/>
+    </data>
 
-    <TextView
-            android:id="@+id/tv_restroom_info_distance"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textSize="18sp"
-            android:layout_marginTop="10dp"/>
+    <LinearLayout
+            android:id="@+id/restroom_information"
+            android:orientation="vertical"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
 
-    <TextView
-            android:id="@+id/tv_restroom_info_open_time"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textSize="18sp"
-            android:layout_marginTop="10dp"/>
+        <TextView
+                android:id="@+id/tv_restroom_info_name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="30sp"
+                android:textStyle="bold"
+                android:text="@{restroom.pbctlt_plc_nm}"/>
 
-    <TextView
-            android:id="@+id/tv_restroom_info_male_female_toilet"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textSize="18sp"
-            android:layout_marginTop="10dp"/>
+        <TextView
+                android:id="@+id/tv_restroom_info_road_name_address"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="18sp"
+                android:layout_marginTop="10dp"
+                android:text="@{restroom.refine_roadnm_addr}"/>
 
-    <TextView
-            android:id="@+id/tv_restroom_info_manage_inst_name"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textSize="18sp"
-            android:layout_marginTop="10dp"/>
+        <TextView
+                android:id="@+id/tv_restroom_info_distance"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="18sp"
+                android:layout_marginTop="10dp"
+                android:visibility="@{restroom.refine_wgs84_lat == null || restroom.refine_wgs84_logt == null ? View.GONE : View.VISIBLE}"
+                android:text="@{@string/restroom_distance(activity.getRestroomDistance)}"/>
 
-    <TextView
-            android:id="@+id/tv_restroom_info_manage_inst_tel_number"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textSize="18sp"
-            android:layout_marginTop="10dp"/>
+        <TextView
+                android:id="@+id/tv_restroom_info_open_time"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="18sp"
+                android:layout_marginTop="10dp"
+                android:text="@{restroom.open_tm_info}"/>
 
-    <TextView
-            android:id="@+id/tv_restroom_info_male_dspsn_wtrcls_cnt"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textSize="18sp"
-            android:layout_marginTop="10dp"/>
+        <TextView
+                android:id="@+id/tv_restroom_info_male_female_toilet"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="18sp"
+                android:visibility="@{restroom.male_female_toilet_yn == null ? View.GONE : View.VISIBLE}"
+                android:text="@{@string/male_female_toilet_yn(restroom.male_female_toilet_yn)}"
+                android:layout_marginTop="10dp"/>
 
-    <TextView
-            android:id="@+id/tv_restroom_info_male_dspsn_uil_cnt"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textSize="18sp"
-            android:layout_marginTop="10dp"/>
+        <TextView
+                android:id="@+id/tv_restroom_info_manage_inst_name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="18sp"
+                android:visibility="@{restroom.manage_inst_nm == null ? View.GONE : View.VISIBLE}"
+                android:text="@{@string/manage_inst_nm(restroom.manage_inst_nm)}"
+                android:layout_marginTop="10dp"/>
 
-    <TextView
-            android:id="@+id/tv_restroom_info_female_dspsn_wtrcls_cnt"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textSize="18sp"
-            android:layout_marginTop="10dp"
-            android:layout_marginBottom="10dp"/>
-</LinearLayout>
+        <TextView
+                android:id="@+id/tv_restroom_info_manage_inst_tel_number"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="18sp"
+                android:visibility="@{restroom.manage_inst_telno == null ? View.GONE : View.VISIBLE}"
+                android:text="@{@string/manage_inst_telno(restroom.manage_inst_telno)}"
+                android:layout_marginTop="10dp"/>
+
+        <TextView
+                android:id="@+id/tv_restroom_info_male_dspsn_wtrcls_cnt"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="18sp"
+                android:text="@{@string/male_dspsn_wtrcls_cnt(restroom.male_dspsn_wtrcls_cnt)}"
+                android:layout_marginTop="10dp"/>
+
+        <TextView
+                android:id="@+id/tv_restroom_info_male_dspsn_uil_cnt"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="18sp"
+                android:text="@{@string/male_dspsn_uil_cnt(restroom.male_dspsn_uil_cnt)}"
+                android:layout_marginTop="10dp"/>
+
+        <TextView
+                android:id="@+id/tv_restroom_info_female_dspsn_wtrcls_cnt"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="18sp"
+                android:text="@{@string/female_dspsn_wtrcls_cnt(restroom.female_dspsn_wtrcls_cnt)}"
+                android:layout_marginTop="10dp"
+                android:layout_marginBottom="10dp"/>
+    </LinearLayout>
+</layout>
