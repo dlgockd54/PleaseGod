@@ -31,7 +31,6 @@ import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.*
 import com.google.android.gms.tasks.Task
-import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.miguelcatalan.materialsearchview.MaterialSearchView
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -48,19 +47,30 @@ class RestroomMapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiCl
         val DEFAULT_ZOOM: Float = 15f
     }
 
-    private lateinit var mMaterialSearchView: MaterialSearchView
-    private lateinit var mGoogleApiClient: GoogleApiClient
+    private val mGoogleApiClient: GoogleApiClient by lazy {
+        GoogleApiClient.Builder(this@RestroomMapActivity)
+            .addConnectionCallbacks(this@RestroomMapActivity)
+            .addOnConnectionFailedListener(this@RestroomMapActivity)
+            .addApi(LocationServices.API)
+            .build()
+    }
     private lateinit var mMap: GoogleMap
-    private lateinit var mFusedLocationProviderClient: FusedLocationProviderClient
+    private val mFusedLocationProviderClient: FusedLocationProviderClient by lazy {
+        LocationServices.getFusedLocationProviderClient(this@RestroomMapActivity)
+    }
     private lateinit var mCurrentLatLng: LatLng
-    private lateinit var mRestroomViewModel: RestroomViewModel
+    private val mRestroomViewModel: RestroomViewModel by lazy {
+        ViewModelProviders.of(this@RestroomMapActivity).get(RestroomViewModel::class.java)
+    }
     private val mRestroomList: MutableList<Restroom> = mutableListOf()
     private var mSelectedRestroomRoadNameAddress: String? = null
     private lateinit var mClickedRestroom: Restroom
     private var mPreviousClickedMarker: Marker? = null
     private var mPolylineToRestroom: Polyline? = null
     private val mMarkerMap: HashMap<Restroom, Marker> = HashMap<Restroom, Marker>()
-    private lateinit var mBottomSheetDialog: BottomSheetDialog
+    private val mBottomSheetDialog: BottomSheetDialog by lazy {
+        BottomSheetDialog(this@RestroomMapActivity)
+    }
     private val mCompositeDisposable: CompositeDisposable = CompositeDisposable()
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -84,7 +94,7 @@ class RestroomMapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiCl
     }
 
     private fun init() {
-        mMaterialSearchView = search_view.apply {
+        search_view.apply {
             setCursorDrawable(R.drawable.color_cursor_white)
             setEllipsize(true)
             setOnQueryTextListener(object : MaterialSearchView.OnQueryTextListener {
@@ -117,13 +127,6 @@ class RestroomMapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiCl
         intent.getStringExtra(RestroomListAdapter.INTENT_KEY)?.let {
             mSelectedRestroomRoadNameAddress = it
         }
-        mRestroomViewModel = ViewModelProviders.of(this).get(RestroomViewModel::class.java)
-        mGoogleApiClient = GoogleApiClient.Builder(this@RestroomMapActivity)
-                .addConnectionCallbacks(this@RestroomMapActivity)
-                .addOnConnectionFailedListener(this@RestroomMapActivity)
-                .addApi(LocationServices.API)
-                .build()
-        mFusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this)
     }
 
     private fun searchRestroomByName(query: String) {
@@ -166,50 +169,11 @@ class RestroomMapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiCl
                     addItemDecoration(DividerItemDecoration(this@RestroomMapActivity, LinearLayoutManager.VERTICAL))
                 }
             }
-        mBottomSheetDialog = BottomSheetDialog(this@RestroomMapActivity).apply {
+
+        with(mBottomSheetDialog) {
             setContentView(bottomSheetView)
-            setOnShowListener {
-                Log.d(TAG, "onShow()")
-            }
+            show()
         }
-
-        val bottomSheetBehavior: BottomSheetBehavior<View> =
-            BottomSheetBehavior.from(bottomSheetView.parent as View).apply {
-                setBottomSheetCallback(object : BottomSheetBehavior.BottomSheetCallback() {
-                    override fun onSlide(bottomSheet: View, slideOffset: Float) {
-                        Log.d(TAG, "onSlide()")
-                    }
-
-                    override fun onStateChanged(bottomSheet: View, newState: Int) {
-                        Log.d(TAG, "onStateChanged()")
-
-                        when (newState) {
-                            BottomSheetBehavior.STATE_DRAGGING -> {
-                                Log.d(TAG, "dragging")
-                            }
-                            BottomSheetBehavior.STATE_SETTLING -> {
-                                Log.d(TAG, "settling")
-                            }
-                            BottomSheetBehavior.STATE_EXPANDED -> {
-                                Log.d(TAG, "expanded")
-                            }
-                            BottomSheetBehavior.STATE_COLLAPSED -> {
-                                Log.d(TAG, "collapsed")
-                            }
-                            BottomSheetBehavior.STATE_HIDDEN -> {
-                                Log.d(TAG, "hidden")
-
-                                mBottomSheetDialog.dismiss()
-                            }
-                            BottomSheetBehavior.STATE_HALF_EXPANDED -> {
-                                Log.d(TAG, "half expanded")
-                            }
-                        }
-                    }
-                })
-            }
-
-        mBottomSheetDialog.show()
     }
 
     private fun addMarkerForRestroomList() {
