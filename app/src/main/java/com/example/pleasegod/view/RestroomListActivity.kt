@@ -8,15 +8,16 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.Toast
-import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.widget.SearchView
-import androidx.lifecycle.Observer
+import androidx.databinding.DataBindingUtil
+import androidx.databinding.ObservableArrayList
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.bumptech.glide.Glide
 import com.bumptech.glide.RequestManager
 import com.example.pleasegod.R
+import com.example.pleasegod.databinding.ActivityRestroomListBinding
 import com.example.pleasegod.model.entity.Restroom
 import com.example.pleasegod.observer.DefaultObserver
 import com.example.pleasegod.observer.DefaultSingleObserver
@@ -82,22 +83,12 @@ class RestroomListActivity : AppCompatActivity() /* , LocationAdapter.OnItemClic
     }
 
     private val mRestroomViewModel: RestroomViewModel by lazy {
-        ViewModelProviders.of(this@RestroomListActivity).get(RestroomViewModel::class.java).apply {
-            mRestroomLiveData.observe(this@RestroomListActivity, Observer {
-                Log.d(TAG, "mRestroomLiveData changed()")
-
-                mRestroomList.clear()
-                mRestroomList.addAll(it)
-                mRestroomListAdapter.copyTotalRestroom()
-                mRestroomListAdapter.notifyDataSetChanged()
-                loading_progress_bar.visibility = View.GONE
-            })
-        }
+        ViewModelProviders.of(this@RestroomListActivity).get(RestroomViewModel::class.java)
     }
     private val mRestroomListAdapter: RestroomListAdapter by lazy {
-        RestroomListAdapter(this, mGlideRequestManager, mRestroomList)
+        RestroomListAdapter(this@RestroomListActivity, mGlideRequestManager)
     }
-    private val mRestroomList: MutableList<Restroom> = mutableListOf()
+    private val mRestroomList: ObservableArrayList<Restroom> = ObservableArrayList<Restroom>()
     private lateinit var mBottomSheetDialog: BottomSheetDialog
     private val mDrawer: Drawer by lazy {
         initDrawer()
@@ -116,7 +107,16 @@ class RestroomListActivity : AppCompatActivity() /* , LocationAdapter.OnItemClic
         Log.d(TAG, "onCreate()")
 
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_restroom_list)
+
+        DataBindingUtil.setContentView<ActivityRestroomListBinding>(
+            this@RestroomListActivity,
+            R.layout.activity_restroom_list
+        ).apply {
+            restroomList = mRestroomList
+            restroomListAdapter = mRestroomListAdapter
+            rvRestroomList.addItemDecoration(mDividerItemDecoration)
+        }
+
         setSupportActionBar(toolbar_location)
 
         init()
@@ -157,11 +157,6 @@ class RestroomListActivity : AppCompatActivity() /* , LocationAdapter.OnItemClic
                         }
                     }
                 }))
-        rv_restroom_list.apply {
-            layoutManager = LinearLayoutManager(this@RestroomListActivity)
-            adapter = mRestroomListAdapter
-            addItemDecoration(mDividerItemDecoration)
-        }
         fab_restroom_list.apply {
             setOnClickListener {
                 Log.d(TAG, "onClick()")
@@ -269,7 +264,21 @@ class RestroomListActivity : AppCompatActivity() /* , LocationAdapter.OnItemClic
 
     private fun getRestroomList(pageIndex: Int = 1, pageSize: Int = 1000, sigunName: String = "고양시") {
         loading_progress_bar.visibility = View.VISIBLE
-        mRestroomViewModel.getRestroomList(getString(R.string.api_key), pageIndex, pageSize, sigunName)
+
+        mCompositeDisposable.add(
+            mRestroomViewModel.getRestroomListSingle(getString(R.string.api_key), pageIndex, pageSize, sigunName)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribeWith(object : DefaultSingleObserver<List<Restroom>>() {
+                    override fun onSuccess(t: List<Restroom>) {
+                        Log.d(TAG, "onSuccess() size: ${t.size}")
+
+                        mRestroomList.clear()
+                        mRestroomList.addAll(t)
+                        loading_progress_bar.visibility = View.GONE
+                    }
+                })
+        )
     }
 
     override fun onBackPressed() {
@@ -283,9 +292,9 @@ class RestroomListActivity : AppCompatActivity() /* , LocationAdapter.OnItemClic
     override fun onDestroy() {
         Log.d(TAG, "onDestroy()")
 
-        super.onDestroy()
-
         mRestroomListAdapter.clearDisposable()
         mCompositeDisposable.clear()
+
+        super.onDestroy()
     }
 }

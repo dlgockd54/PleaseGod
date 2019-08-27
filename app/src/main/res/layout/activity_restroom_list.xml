@@ -1,64 +1,78 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout
+<layout
         xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:app="http://schemas.android.com/apk/res-auto"
         xmlns:tools="http://schemas.android.com/tools"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:fitsSystemWindows="true">
+        xmlns:bind="http://schemas.android.com/tools">
 
-    <androidx.appcompat.widget.Toolbar
-            android:id="@+id/toolbar_location"
+    <data>
+        <import type="androidx.databinding.ObservableArrayList"/>
+        <import type="com.example.pleasegod.model.entity.Restroom"/>
+
+        <variable name="restroomListAdapter" type="com.example.pleasegod.view.adapter.RestroomListAdapter"/>
+        <variable name="restroomList" type="androidx.databinding.ObservableArrayList&lt;Restroom&gt;"/>
+    </data>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize"
-            android:background="@color/colorPrimary"
-            android:elevation="4dp"
-            android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:popupTheme="@style/ThemeOverlay.AppCompat.Light">
+            android:layout_height="match_parent"
+            android:fitsSystemWindows="true">
 
-    </androidx.appcompat.widget.Toolbar>
+        <androidx.appcompat.widget.Toolbar
+                android:id="@+id/toolbar_location"
+                android:layout_width="match_parent"
+                android:layout_height="?attr/actionBarSize"
+                android:background="@color/colorPrimary"
+                android:elevation="4dp"
+                android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:popupTheme="@style/ThemeOverlay.AppCompat.Light">
 
-    <FrameLayout
-            android:id="@+id/drawer_container"
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/toolbar_location">
+        </androidx.appcompat.widget.Toolbar>
 
         <FrameLayout
-                android:id="@+id/frame_container"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:orientation="vertical"
-                tools:context=".view.RestroomListActivity">
+                android:id="@+id/drawer_container"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/toolbar_location">
 
-            <ProgressBar
-                    android:id="@+id/loading_progress_bar"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:visibility="gone"
-                    android:layout_gravity="center"/>
-
-            <androidx.recyclerview.widget.RecyclerView
-                    android:id="@+id/rv_restroom_list"
+            <FrameLayout
+                    android:id="@+id/frame_container"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:scrollbars="vertical">
-            </androidx.recyclerview.widget.RecyclerView>
+                    android:orientation="vertical"
+                    tools:context=".view.RestroomListActivity">
 
-            <com.google.android.material.floatingactionbutton.FloatingActionButton
-                    android:id="@+id/fab_restroom_list"
-                    android:layout_width="56dp"
-                    android:layout_height="56dp"
-                    android:layout_gravity="bottom|end"
-                    android:layout_margin="30dp"
-                    android:src="@drawable/ic_search_white_24dp"/>
+                <ProgressBar
+                        android:id="@+id/loading_progress_bar"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:visibility="gone"
+                        android:layout_gravity="center"/>
 
+                <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/rv_restroom_list"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:scrollbars="vertical"
+                        android:adapter="@{restroomListAdapter}"
+                        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                        bind:item="@{restroomList}">
+                </androidx.recyclerview.widget.RecyclerView>
+
+                <com.google.android.material.floatingactionbutton.FloatingActionButton
+                        android:id="@+id/fab_restroom_list"
+                        android:layout_width="56dp"
+                        android:layout_height="56dp"
+                        android:layout_gravity="bottom|end"
+                        android:layout_margin="30dp"
+                        android:src="@drawable/ic_search_white_24dp"/>
+            </FrameLayout>
         </FrameLayout>
-    </FrameLayout>
-</androidx.constraintlayout.widget.ConstraintLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</layout>

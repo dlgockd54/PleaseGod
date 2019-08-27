@@ -3,15 +3,17 @@ package com.example.pleasegod.view.adapter
 import android.app.Activity
 import android.content.Intent
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
 import android.widget.Filter
 import android.widget.Filterable
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.databinding.BindingAdapter
+import androidx.databinding.ObservableArrayList
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.RequestManager
 import com.example.pleasegod.R
+import com.example.pleasegod.databinding.ItemRestroomBinding
 import com.example.pleasegod.model.entity.Restroom
 import com.example.pleasegod.observer.DefaultObserver
 import com.example.pleasegod.view.RestroomMapActivity
@@ -27,46 +29,56 @@ import java.util.concurrent.TimeUnit
 
 class RestroomListAdapter(
     private val mActivity: Activity,
-    private val mGlideRequestManager: RequestManager,
-    private val mRestroomList: MutableList<Restroom>
+    private val mGlideRequestManager: RequestManager
 ) : RecyclerView.Adapter<RestroomListAdapter.RestroomViewHolder>(), Filterable {
     companion object {
         val TAG: String = RestroomListAdapter::class.java.simpleName
         val INTENT_KEY: String = "selected_restroom"
+
+        @JvmStatic
+        @BindingAdapter("bind:item")
+        fun bindItem(recyclerView: RecyclerView, restroomList: ObservableArrayList<Restroom>) {
+            recyclerView.adapter?.let {
+                (it as RestroomListAdapter).setRestroomList(restroomList)
+            }
+        }
     }
 
+    private val mRestroomList: MutableList<Restroom> = mutableListOf()
     private var mTotalRestroomList: MutableList<Restroom> = mutableListOf()
     private val mCompositeDisposable: CompositeDisposable = CompositeDisposable()
 
-    fun copyTotalRestroom() {
+    private fun setRestroomList(restroomList: List<Restroom>) {
+        mRestroomList.clear()
+        mRestroomList.addAll(restroomList)
+
+        copyTotalRestroom()
+        notifyDataSetChanged()
+    }
+
+    private fun copyTotalRestroom() {
         mTotalRestroomList.clear()
         mTotalRestroomList.addAll(mRestroomList)
     }
 
     fun restoreTotalRestroomData() {
-        mRestroomList.clear()
-        mRestroomList.addAll(mTotalRestroomList)
+        setRestroomList(mTotalRestroomList)
 
         notifyDataSetChanged()
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RestroomViewHolder {
-        val view: View =
-            LayoutInflater.from(mActivity.applicationContext).inflate(R.layout.item_restroom, parent, false)
+        val binding: ItemRestroomBinding =
+            ItemRestroomBinding.inflate(LayoutInflater.from(parent.context), parent, false)
 
-        return RestroomViewHolder(view)
+        return RestroomViewHolder(binding)
     }
 
     override fun getItemCount(): Int = mRestroomList.size
 
     override fun onBindViewHolder(holder: RestroomViewHolder, position: Int) {
         mRestroomList[position].let { restroom ->
-            mGlideRequestManager
-                .load(R.drawable.pray)
-                .into(holder.mPrayImageView)
-            holder.mRestroomNameTextView.text = restroom.pbctlt_plc_nm
-            holder.mRoadNameAddressTextView.text = restroom.refine_roadnm_addr
-            holder.mRegularTimeTextView.text = restroom.open_tm_info
+            holder.bind(restroom)
 
             mCompositeDisposable.add(
                 holder.itemView.clicks()
@@ -125,10 +137,26 @@ class RestroomListAdapter(
         mCompositeDisposable.clear()
     }
 
-    class RestroomViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        val mPrayImageView: ImageView = itemView.iv_pray
-        val mRestroomNameTextView: TextView = itemView.tv_restroom_name
-        val mRoadNameAddressTextView: TextView = itemView.tv_road_name_address
-        val mRegularTimeTextView: TextView = itemView.tv_regular_time
+    inner class RestroomViewHolder(val binding: ItemRestroomBinding) : RecyclerView.ViewHolder(binding.root) {
+        val mPrayImageView: ImageView by lazy {
+            itemView.iv_pray
+        }
+        val mRestroomNameTextView: TextView by lazy {
+            itemView.tv_restroom_name
+        }
+        val mRoadNameAddressTextView: TextView by lazy {
+            itemView.tv_road_name_address
+        }
+        val mRegularTimeTextView: TextView by lazy {
+            itemView.tv_regular_time
+        }
+
+        fun bind(restroom: Restroom) {
+            mGlideRequestManager
+                .load(R.drawable.pray)
+                .into(mPrayImageView)
+
+            binding.restroom = restroom
+        }
     }
 }

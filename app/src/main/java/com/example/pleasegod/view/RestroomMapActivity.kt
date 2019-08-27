@@ -12,12 +12,12 @@ import android.view.LayoutInflater
 import android.view.Menu
 import android.view.View
 import androidx.appcompat.widget.Toolbar
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.pleasegod.R
 import com.example.pleasegod.model.entity.Restroom
+import com.example.pleasegod.observer.DefaultSingleObserver
 import com.example.pleasegod.view.adapter.RestroomListAdapter
 import com.example.pleasegod.view.adapter.SearchedRestroomAdapter
 import com.example.pleasegod.viewmodel.RestroomViewModel
@@ -34,6 +34,9 @@ import com.google.android.gms.tasks.Task
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.miguelcatalan.materialsearchview.MaterialSearchView
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.disposables.CompositeDisposable
+import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.activity_restroom_map.*
 import kotlinx.android.synthetic.main.bottom_sheet_searched_restroom.view.rv_searched_restroom_list
 import kotlinx.android.synthetic.main.item_restroom_information.view.*
@@ -58,6 +61,7 @@ class RestroomMapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiCl
     private var mPolylineToRestroom: Polyline? = null
     private val mMarkerMap: HashMap<Restroom, Marker> = HashMap<Restroom, Marker>()
     private lateinit var mBottomSheetDialog: BottomSheetDialog
+    private val mCompositeDisposable: CompositeDisposable = CompositeDisposable()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -113,15 +117,7 @@ class RestroomMapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiCl
         intent.getStringExtra(RestroomListAdapter.INTENT_KEY)?.let {
             mSelectedRestroomRoadNameAddress = it
         }
-        mRestroomViewModel = ViewModelProviders.of(this).get(RestroomViewModel::class.java).apply {
-            mRestroomLiveData.observe(this@RestroomMapActivity, Observer {
-                mRestroomList.clear()
-                mRestroomList.addAll(it)
-
-                addMarkerForRestroomList()
-                showUserSelectedRestroom()
-            })
-        }
+        mRestroomViewModel = ViewModelProviders.of(this).get(RestroomViewModel::class.java)
         mGoogleApiClient = GoogleApiClient.Builder(this@RestroomMapActivity)
                 .addConnectionCallbacks(this@RestroomMapActivity)
                 .addOnConnectionFailedListener(this@RestroomMapActivity)
@@ -447,7 +443,20 @@ class RestroomMapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiCl
     }
 
     private fun getRestroomList(pageIndex: Int = 1, pageSize: Int = 1000, sigunName: String = "고양시") {
-        mRestroomViewModel.getRestroomList(getString(R.string.api_key), pageIndex, pageSize, sigunName)
+        mCompositeDisposable.add(
+            mRestroomViewModel.getRestroomListSingle(getString(R.string.api_key), pageIndex, pageSize, sigunName)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribeWith(object : DefaultSingleObserver<List<Restroom>>() {
+                    override fun onSuccess(t: List<Restroom>) {
+                        mRestroomList.clear()
+                        mRestroomList.addAll(t)
+
+                        addMarkerForRestroomList()
+                        showUserSelectedRestroom()
+                    }
+                })
+        )
     }
 
     override fun onConnected(connectionHint: Bundle?) {
@@ -514,8 +523,8 @@ class RestroomMapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiCl
     }
 
     override fun onDestroy() {
-        super.onDestroy()
+        mCompositeDisposable.clear()
 
-        mRestroomViewModel.clearDisposable()
+        super.onDestroy()
     }
 }
