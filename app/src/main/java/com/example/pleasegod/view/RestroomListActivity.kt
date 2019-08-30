@@ -10,7 +10,6 @@ import android.view.View
 import android.widget.Toast
 import androidx.appcompat.widget.SearchView
 import androidx.databinding.DataBindingUtil
-import androidx.databinding.ObservableArrayList
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -18,9 +17,7 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.RequestManager
 import com.example.pleasegod.R
 import com.example.pleasegod.databinding.ActivityRestroomListBinding
-import com.example.pleasegod.model.entity.Restroom
 import com.example.pleasegod.observer.DefaultObserver
-import com.example.pleasegod.observer.DefaultSingleObserver
 import com.example.pleasegod.view.adapter.RestroomListAdapter
 import com.example.pleasegod.viewmodel.RestroomViewModel
 import com.google.android.material.bottomsheet.BottomSheetBehavior
@@ -88,7 +85,6 @@ class RestroomListActivity : AppCompatActivity() /* , LocationAdapter.OnItemClic
     private val mRestroomListAdapter: RestroomListAdapter by lazy {
         RestroomListAdapter(this@RestroomListActivity, mGlideRequestManager)
     }
-    private val mRestroomList: ObservableArrayList<Restroom> = ObservableArrayList<Restroom>()
     private lateinit var mBottomSheetDialog: BottomSheetDialog
     private val mDrawer: Drawer by lazy {
         initDrawer()
@@ -112,7 +108,8 @@ class RestroomListActivity : AppCompatActivity() /* , LocationAdapter.OnItemClic
             this@RestroomListActivity,
             R.layout.activity_restroom_list
         ).apply {
-            restroomList = mRestroomList
+            isLoadingFinish = mRestroomViewModel.mIsLoadingFinish
+            restroomList = mRestroomViewModel.mRestroomList
             restroomListAdapter = mRestroomListAdapter
             rvRestroomList.addItemDecoration(mDividerItemDecoration)
         }
@@ -120,7 +117,7 @@ class RestroomListActivity : AppCompatActivity() /* , LocationAdapter.OnItemClic
         setSupportActionBar(toolbar_location)
 
         init()
-        showRestroomList(0)
+        showRestroomList(mRestroomViewModel.mClickedLocationIndex)
     }
 
     private fun init() {
@@ -248,7 +245,9 @@ class RestroomListActivity : AppCompatActivity() /* , LocationAdapter.OnItemClic
             .build()
 
     private fun showRestroomList(position: Int) {
-        getRestroomList(LOCATION_LIST[position])
+        requestPublishRestroomListSingle(LOCATION_LIST[position])
+        mRestroomViewModel.mClickedLocationIndex = position
+        mDrawer.setSelectionAtPosition(position, false)
         mDrawer.closeDrawer()
 
         val sharedPreferences = getSharedPreferences("selected_location_preferences", Context.MODE_PRIVATE)
@@ -258,26 +257,20 @@ class RestroomListActivity : AppCompatActivity() /* , LocationAdapter.OnItemClic
         }
     }
 
-    private fun getRestroomList(sigunName: String) {
-        getRestroomList(1, 1000, sigunName)
+    private fun requestPublishRestroomListSingle(sigunName: String) {
+        requestPublishRestroomListSingle(1, 1000, sigunName)
     }
 
-    private fun getRestroomList(pageIndex: Int = 1, pageSize: Int = 1000, sigunName: String = "고양시") {
-        loading_progress_bar.visibility = View.VISIBLE
-
-        mCompositeDisposable.add(
-            mRestroomViewModel.getRestroomListSingle(getString(R.string.api_key), pageIndex, pageSize, sigunName)
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribeWith(object : DefaultSingleObserver<List<Restroom>>() {
-                    override fun onSuccess(t: List<Restroom>) {
-                        Log.d(TAG, "onSuccess() size: ${t.size}")
-
-                        mRestroomList.clear()
-                        mRestroomList.addAll(t)
-                        loading_progress_bar.visibility = View.GONE
-                    }
-                })
+    private fun requestPublishRestroomListSingle(
+        pageIndex: Int = 1,
+        pageSize: Int = 1000,
+        sigunName: String = "고양시"
+    ) {
+        mRestroomViewModel.requestPublishRestroomList(
+            getString(R.string.api_key),
+            pageIndex,
+            pageSize,
+            sigunName
         )
     }
 
