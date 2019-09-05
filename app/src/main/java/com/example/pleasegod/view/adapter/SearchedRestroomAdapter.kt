@@ -34,18 +34,17 @@ class SearchedRestroomAdapter(
     override fun getItemCount(): Int = mRestroomList.size
 
     override fun onBindViewHolder(holder: SearchedRestroomViewHolder, position: Int) {
-        holder.let {
-            it.mRestroomNameTextView.text = mRestroomList[position].pbctlt_plc_nm
-            it.mRestroomRoadNameAddressTextView.text = mRestroomList[position].refine_roadnm_addr
-            it.itemView.setOnClickListener {
-                mRestroomClickListener.onRestroomClick(mRestroomList[position])
-            }
-        }
+        holder.bind(mRestroomList[position])
     }
 
     class SearchedRestroomViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val mRestroomNameTextView: TextView = itemView.tv_searched_restroom_name
         val mRestroomRoadNameAddressTextView: TextView = itemView.tv_searched_restroom_road_name_address
+
+        fun bind(restroom: Restroom) {
+            mRestroomNameTextView.text = restroom.pbctlt_plc_nm
+            mRestroomRoadNameAddressTextView.text = restroom.refine_roadnm_addr
+        }
     }
 
     interface RestroomClickListener {
