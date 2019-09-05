@@ -37,13 +37,16 @@ class SearchedRestroomAdapter(
         holder.bind(mRestroomList[position])
     }
 
-    class SearchedRestroomViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+    inner class SearchedRestroomViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val mRestroomNameTextView: TextView = itemView.tv_searched_restroom_name
         val mRestroomRoadNameAddressTextView: TextView = itemView.tv_searched_restroom_road_name_address
 
         fun bind(restroom: Restroom) {
             mRestroomNameTextView.text = restroom.pbctlt_plc_nm
             mRestroomRoadNameAddressTextView.text = restroom.refine_roadnm_addr
+            itemView.setOnClickListener {
+                mRestroomClickListener.onRestroomClick(restroom)
+            }
         }
     }
 
