@@ -19,6 +19,7 @@ import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.pleasegod.R
+import com.example.pleasegod.databinding.ActivityRestroomMapBinding
 import com.example.pleasegod.databinding.ItemRestroomInformationBinding
 import com.example.pleasegod.model.entity.Restroom
 import com.example.pleasegod.observer.DefaultObserver
@@ -83,8 +84,13 @@ class RestroomMapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiCl
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_restroom_map)
 
+        DataBindingUtil.setContentView<ActivityRestroomMapBinding>(
+            this@RestroomMapActivity,
+            R.layout.activity_restroom_map
+        ).apply {
+            isLoadingFinish = mRestroomViewModel.mIsLoadingFinish
+        }
         setSupportActionBar(map_toolbar as Toolbar)
 
         val mapFragment = (supportFragmentManager.findFragmentById(R.id.restroom_map) as SupportMapFragment).apply {
