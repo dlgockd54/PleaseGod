@@ -16,6 +16,10 @@ import javax.inject.Inject
  */
 
 class RestroomViewModel : ViewModel() {
+    companion object {
+        const val RETRY_MAX: Int = 2
+    }
+
     @Inject
     lateinit var mRepository: RestroomRepository
 
@@ -42,6 +46,9 @@ class RestroomViewModel : ViewModel() {
                 mRepository.getRestroomList(apiKey, "json", pageIndex, pageSize, sigunName)
                     .map { it.getPubltolt()?.get(1)?.getRow() }
                     .subscribeOn(Schedulers.io())
+                    .retry { retryCnt, e ->
+                        retryCnt < RETRY_MAX
+                    }
                     .subscribeWith(object : DefaultSingleObserver<List<Restroom>>() {
                         override fun onSuccess(t: List<Restroom>) {
                             mRestroomList.clear()
