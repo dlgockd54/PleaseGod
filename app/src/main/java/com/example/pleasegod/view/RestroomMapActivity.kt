@@ -3,6 +3,7 @@ package com.example.pleasegod.view
 import android.Manifest
 import android.content.Context
 import android.content.pm.PackageManager
+import android.content.res.Configuration
 import android.graphics.Color
 import android.location.Location
 import androidx.appcompat.app.AppCompatActivity
@@ -98,6 +99,12 @@ class RestroomMapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiCl
         }
 
         init()
+    }
+
+    override fun onConfigurationChanged(newConfig: Configuration) {
+        super.onConfigurationChanged(newConfig)
+
+        mRestroomListLoadingFinishSubject.onNext(true)
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
